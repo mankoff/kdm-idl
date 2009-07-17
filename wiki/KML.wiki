@@ -1,6 +1,8 @@
-Description of the KDM_KML suite
+# Description of the KDM_KML suite
 
 = Introduction =
+
+http://code.google.com/apis/kml/documentation/kmlreference.html
 
 http://code.google.com/apis/kml/documentation/Images/hierarchy_withgx.gif
 
