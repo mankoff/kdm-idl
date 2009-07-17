@@ -1,0 +1,45 @@
+Description of the KDM_KML suite
+
+= Introduction =
+
+http://code.google.com/apis/kml/documentation/Images/hierarchy_withgx.gif
+
+= Example =
+
+{{{
+<Placemark>
+  <name>Google Earth - New Placemark</name>
+  <description>Some Descriptive text.</description>
+  <LookAt>
+    <longitude>-90.86879847669974</longitude>
+    <latitude>48.25330383601299</latitude>
+    <range>440.8</range>
+    <tilt>8.3</tilt>
+    <heading>2.7</heading>
+  </LookAt>
+  <Point>
+    <coordinates>-90.86948943473118,48.25450093195546,0</coordinates>
+  </Point>
+</Placemark>
+}}}
+
+Becomes:
+
+{{{
+kml = obj_new('kdm_kml', filename='test.kml' )
+doc = obj_new('kdm_kml_document')
+placemark = obj_new('kdm_kml_placemark, $
+    name='Google Earth - New Placemark', $
+    description='Some Descriptive text.', $
+    lat=-90.86, lon=48.25 )
+doc->add, placemark
+kml->add, doc
+kml->kmlSave, /kmz, /openGE
+}}}
+}}}
+
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
