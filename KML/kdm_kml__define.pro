@@ -1,3 +1,33 @@
+;+
+; CLASS_NAME:
+;	kdm_kml
+;
+; PURPOSE:
+;   Top level KML object for the kdm-idl kdm_kml group. A kdm_kml
+;   object holds a kdm_kml_object. This object contains the generic
+;   code that all other inherited KML objects might use
+;
+; CATEGORY:
+;   KML
+;
+; SUPERCLASSES:
+;   kdm, objtree
+;
+; SUBCLASSES:
+;   kdm_kml_object
+;
+; CREATION:
+;   kml = obj_new( 'kdm_kml', filename='output.kml' )
+;
+; METHODS:
+;   saveKML: Write the KML to disk
+;   KMLhead, KMLbody, KMLtail: Produce the head, body, and tail KML code
+;
+; MODIFICATION HISTORY:
+; 	Written by:	Ken Mankoff, July 2009.
+;
+;-
+
 
 ;; given a string, insert it into the current KML file
 pro kdm_kml::inject
@@ -23,6 +53,50 @@ pro kdm_kml::inject
 
 end
 
+;+
+;
+; METHODNAME:
+;       kdm_kml::saveKML
+;
+; PURPOSE:
+;       This method generats the KML code into a string and saves it
+;       to disk. Optionally it converts the KML into a KMZ.
+;
+; CALLING SEQUENCE:
+;   o->saveKML, /openGE, /KMZ, dirs=dirs, include=include, exclude=exclude
+;
+; OPTIONAL INPUTS:
+;   /openGE: Open the resulting KML/KMZ file in Google Earth
+;	
+; KEYWORD PARAMETERS:
+;   /KMZ: Convert the KML to KMZ. Optionally use the INCLUDE and
+;         EXCLUDE keywords
+;   INCLUDE=include: A string or array of strings listing files in
+;           other folders (or entire folders) to include in the KMZ
+;           file. This is because a KMZ contains images and various
+;           other items that must be zipped into it.
+;   EXCLUDE=exclude: A string or array of strings (wildcards allowed)
+;           listing items that should be excluded from the KMZ.
+;
+;   Example of INCLUDE and EXCLUDE: Include a folder of images that
+;   contains PS, PDF, and PNG images, but exclude the PS and PDF
+;   images, as only the PNG images are used in the KMZ file.
+;
+; OUTPUTS:
+;   This function writes a KML file to disk.
+;
+; EXAMPLE:
+;   kml = obj_new('kdm_kml', filename='test.kml' )
+;   doc = obj_new('kdm_kml_document')
+;   placemark = obj_new('kdm_kml_placemark, $
+;       name='Google Earth - New Placemark', $
+;       description='Some Descriptive text.', $
+;       lat=-90.86, lon=48.25 )
+;   doc->add, placemark
+;   kml->add, doc
+;   kml->kmlSave, /kmz, /openGE
+;
+;-
 pro kdm_kml::saveKML, kml=kml, recursive=recursive, kmz=kmz, openge=openge, _EXTRA=e
   self->KMLhead, kml=kml
   self->KMLbody, kml=kml
@@ -48,6 +122,12 @@ pro kdm_kml::saveKML, kml=kml, recursive=recursive, kmz=kmz, openge=openge, _EXT
   endif
 end
 
+
+;;
+;; Called by saveKML. Converts a KML to KMZ. Optional dirs, includ,
+;; and exclude arguments can be used to incorporate images into the
+;; KMZ to make it a self-contained bundle.
+;;
 pro kdm_kml::kml2kmz, dirs=dirs, include=include, exclude=exclude
   if keyword_set(include) AND keyword_set(exclude) then $
      MESSAGE, "Include and exclude are mutually exclusive"
@@ -70,7 +150,7 @@ pro kdm_kml::kml2kmz, dirs=dirs, include=include, exclude=exclude
      message, "not yet implemented"
   endif
   ;;if keyword_set(exclude) then cmd += ' -x' + '`ls -R *'+include+'*`'
-  print, cmd
+  ;;print, cmd
   spawn, cmd, out
   ;;file_delete, kmlfile, tmp.include, 
 end
@@ -101,7 +181,6 @@ end
 function kdm_kml_object::xmlTag, tag, str, _EXTRA=e
   return, '<'+tag+'>'+STRTRIM(str,2)+'</'+tag+'>'
 end
-
 
 
 
