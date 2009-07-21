@@ -1,0 +1,121 @@
+head	1.2;
+access;
+symbols;
+locks
+	mankoff:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2002.09.26.01.04.13;	author mankoff;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.08.01.23.31.54;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@added docs
+@
+text
+@; $Id: lontv.pro,v 1.1 2002/08/01 23:31:54 mankoff Exp mankoff $
+;
+; $Author: mankoff $
+; $Revisions$
+; $Date: 2002/08/01 23:31:54 $
+;
+;+
+; NAME:
+;	LONTV
+;
+; PURPOSE:
+;       Fix a lat/lon grid that you want to map on a globe with
+;       MAP_PATCH or MAP_IMAGE so it works with IDLs buggy routines
+;
+; CATEGORY:
+;       SNOE, Imaging, Map
+;
+; CALLING SEQUENCE:
+;       Result = LONTV( Array )
+;
+; INPUTS:
+;       Array: An array of any size, where the X dimension is
+;           longitude, and Y is data
+;
+; OUTPUTS:
+;       The array is returned with the first column duplicated as the
+;       last column.
+;
+; EXAMPLE:
+;     test = REBIN( BYTSCL( BINDGEN(15) ), 15, 2 )
+;     tv, map_image( test, bilinear=0 )
+;     ;;; The max color is 1/2 as wide as all the rest!
+;     tv, map_image( lontv(test), bilinear=0 )
+;
+; MODIFICATION HISTORY:
+; 	Written by: Barth
+;	2002-09-25: Added docs
+;
+;-
+
+function lontv, input
+
+s = size( input )
+
+x = s[ 1 ] ; xsize
+y = s[ 2 ] ; ysize
+t = s[ 3 ] ; array type
+
+output = make_array( x+1, y, /nozero, type=t )
+output[ 0 : x-1, 0 : y-1 ] = input
+output[ x, * ] = output[ 0, * ]
+
+return, output
+end
+
+;
+; $Log: lontv.pro,v $
+; Revision 1.1  2002/08/01 23:31:54  mankoff
+; Initial revision
+;
+;
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+; $Id$
+d3 1
+a3 1
+; $Author$
+d5 1
+a5 1
+; $Date$
+d7 23
+a29 8
+
+;;; used to prepare an array of [ lat, lon ] for TVing with MAP_SET and
+;;; MAP_IMAGE. They need a longitude duplicated to be correct...
+
+;;; MAP_IMAGE has a bug that 'chops' off some longitudes. The fix is
+;;; to duplicate the first column at the end. To see the bug in action
+;;; run this code:
+
+d34 6
+d57 4
+a60 1
+; $Log$
+@

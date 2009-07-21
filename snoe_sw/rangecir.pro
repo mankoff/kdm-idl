@@ -1,0 +1,31 @@
+
+;;; This procedure (RANGECIR) is the opposite of the CIRRANGE
+;;; procedure. To learn about CIRRANGE, find by:
+;;;
+;;; in UNIX:
+;;; % find . -name "cirrange.pro"
+;;; Then look at its documentation
+;;;
+;;; in IDL:
+;;; IDL> .com cirrange
+;;; IDL> HELP, /SOURCE
+;;;    or
+;;; IDL> doc_library, 'cirrange'
+;;;
+
+PRO rangecir, ang
+
+;;; purpose: do the reverse of cirrange. That is, force ang into the
+;;; -180 to 180 degree range, rather than 0 to 360
+
+;;; cirrange is used widely and is from the NASA Astronomy Library.
+;;; Use the Linux/Unix 'find' command I taught you to see it...
+
+pts = WHERE( ang GT 180 ) 
+IF ( pts[ 0 ] NE - 1 ) THEN ang[ pts ] = ang[ pts ] - 360
+
+pts = WHERE( ang LT -180 )
+IF ( pts[ 0 ] ne - 1 ) then ang[ pts ] = ang[ pts ] + 360
+
+RETURN
+END

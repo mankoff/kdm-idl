@@ -1,0 +1,153 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2002.09.02.02.58.22;	author mankoff;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.08.29.23.20.22;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@help now uses CALLS= rather than /TRACEBACK with output caputure b/c
+its easier to parse
+@
+text
+@; $Id: file_uniq.pro,v 1.1 2002/08/29 23:20:22 mankoff Exp mankoff $
+;
+; $Author: mankoff $
+; $Revision: 1.1 $
+; $Date: 2002/08/29 23:20:22 $
+;
+
+FUNCTION FILE_UNIQ
+
+;+
+; NAME:
+;	FILE_UNIQ
+;
+; PURPOSE:
+;       Returns a uniq filename, based upon the procedure the use ran.
+;
+; CATEGORY:
+;       SNOE, File
+;
+; CALLING SEQUENCE:
+;       Result = FILE_UNIQ()
+;
+; OUTPUTS:
+;       A string, usabel as a filename, uniq to the current
+;       directory. This is the FIRST part of a filename (before the
+;       period). But it is unique anyways, regardless of the extension
+;       you should choose to add on. 
+;
+; RESTRICTIONS:
+;       Whatever restrictions are imposed by FINDFILE (presumably,
+;       read access is required in the current directory)
+;
+; PROCEDURE:
+;       Generate a UNIQ filename based upon the procedure that the
+;       user typed at the command line, regardless of how many other
+;       procedures were called before this one.
+;
+;       Use the Procedure stack to find the TOP procedure. Generate a
+;       name based on it. Append a _XXXX four digit number to the
+;       name. Then, search for that file (with a .*) in the current
+;       directory.
+;
+; EXAMPLE:
+;       From the command line, to generate a unique filename, type:
+;           print, FILE_UNIQ() 
+;       This string is usable and unique with ANY extension.
+;
+;       Call this procedure from inside some other procedures like
+;       this:
+;           SET_PLOT, 'ps'
+;           DEVICE, /COLOR, BITS=8, FILENAME=file_uniq()+'.ps'
+;       To generate a unique postscript filename.
+;
+;       Here is the real beauty of this procedure: If the user runs
+;       "L4_lat_alt_disp" and this is called somewhere in it or one of
+;       its subroutines, the filename will start with
+;       L4_LAT_ALT_DISP_0000.ps, and then 0001.ps, etc... If the user
+;       runs it from a different procedure, it will have a different name.
+;
+; MODIFICATION HISTORY:
+; 	Written by: KDM; 2002-08-29
+;   2002-09-01; KDM; Changed help call to use CALLS rather than /TRACEBACK
+;
+;-
+
+;;; get the calling stack of PROCs and FCNs
+help, calls=stack
+
+;;; get the name of the bottom (the one the USER called)
+tlc = stack[ n_elements( stack )-2 ] ; Top Level Call
+name = (STRSPLIT( tlc, /EXTRACT ))[0]
+if ( name EQ 'FILE_UNIQ' ) then pre = 'IDL_' ELSE pre = name + '_'
+pre = STRLOWCASE( pre )
+
+n = -1
+REPEAT BEGIN
+    n = n + 1
+    file = pre + STRING( n, FORMAT='(I4.4)', /PRINT )
+    f = findfile( file+'.*', count=count )
+ENDREP UNTIL ( count EQ 0 )
+return, file
+
+END
+
+;
+; $Log: file_uniq.pro,v $
+; Revision 1.1  2002/08/29 23:20:22  mankoff
+; Initial revision
+;
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+; $Id$
+d3 3
+a5 3
+; $Author$
+; $Revision$
+; $Date$
+d62 1
+d67 2
+a68 1
+help, /traceback, output=stack
+d70 3
+a72 10
+stack = stack[ n_elements( stack )-2 ]
+
+IF ( STREGEX( stack, "FILE_UNIQ ", /BOOLEAN ) ) THEN pre='IDL_' ELSE BEGIN
+    ;;; the above line is if we were called interactively (either by
+    ;;; hand, or in a file done with an @@file from the command line.
+
+    ;;; if not, then we are deeper in the stack. Find out the name of
+    ;;; the procedure that the user typed
+    pre = ( STRSPLIT( stack, /EXTRACT ) )[1] + '_'
+ENDELSE
+d86 3
+a88 1
+; $Log$
+@

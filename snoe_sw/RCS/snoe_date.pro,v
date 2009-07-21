@@ -1,0 +1,950 @@
+head	1.16;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.16
+date	2004.01.07.15.47.46;	author mankoff;	state Exp;
+branches;
+next	1.15;
+
+1.15
+date	2002.08.01.21.08.44;	author mankoff;	state Exp;
+branches;
+next	1.14;
+
+1.14
+date	2002.06.24.21.51.15;	author mankoff;	state Exp;
+branches;
+next	1.13;
+
+1.13
+date	2002.05.16.16.28.07;	author mankoff;	state Exp;
+branches;
+next	1.12;
+
+1.12
+date	2002.04.25.17.29.06;	author mankoff;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2002.04.25.16.52.27;	author mankoff;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2002.04.25.16.46.26;	author mankoff;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2002.04.25.14.31.09;	author mankoff;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2002.02.21.16.17.58;	author mankoff;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2001.11.20.17.59.30;	author mankoff;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2001.09.20.15.06.57;	author mankoff;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2001.09.13.23.47.54;	author mankoff;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2001.09.13.19.26.09;	author mankoff;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.09.06.21.48.09;	author mankoff;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.09.06.21.26.33;	author fishert;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.09.06.20.52.07;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@a function to translate to/from various SNOE date formats
+@
+
+
+1.16
+log
+@added Justin's 2004 compatibility
+@
+text
+@; $Id: snoe_date.pro,v 1.15 2002/08/01 21:08:44 mankoff Exp mankoff $
+;
+; $Author: mankoff $
+; $Revision: 1.15 $
+; $Date: 2002/08/01 21:08:44 $
+;
+;+
+; NAME:
+;	SNOE_DATE
+;
+; PURPOSE:
+;   This function translates dates for the SNOE S/C and mission,
+;   between various different formats. 
+;
+; CATEGORY:
+;   SNOE, date, time
+;
+; CALLING SEQUENCE:
+;	result = SNOE_DATE( date, /from_xxx, /to_xxx ) 
+;
+; INPUTS:
+;	Date: a date, in one of the formats listed below.
+;
+; KEYWORD PARAMETERS:
+;       FROM_YMD: A keyword specifing that the input is a 3 element
+;       vector, where the first element is a four digit year between
+;       1998 and 2003. The second element is a month number, and the 
+;       third element is the day-of-month. The year can be either 2 or
+;       4 digits
+;
+;       FROM_YYDDD: A keyword specifying that the input is a number
+;       of the form YYDDD. 20 represents 00020, or day 20 of year 2000.
+;       98070 is the first day of the mission.
+;
+;       FROM_YYYYDDD: A keyword specifying that the input is a number
+;       of the form YYYYDDD. This is a four digit year, followed by a
+;       3 digit day-of-year.
+;
+;       FROM_MISSION: A keyword specifying that the input is in day of
+;       mission format, where zero (0) is the first day of the
+;       mission.
+;
+;       FROM_DOM: Same as FROM_MISSION
+;
+;       FROM_DOY: A keyword specifying that the input is in
+;       Day-Of-Year format. 1 is the first day of the year.
+;
+;       FROM_TODAY: This keword makes the output the current UTC date
+;       converted to the format specified by the /TO_xxx keyword. An
+;       input argument is OPTIONAL, and will be ignored if this
+;       keyword is set.
+;
+;       TO_DOY: A keyword specifying that the output should be the day
+;       of year of the input date. Note that there is no distinction
+;       nor way to tell what year this day-of-year belongs to. You
+;       must deduce this based upon the input.
+;
+;       TO_YMD: A keyword specifying that the output should be a 3 element
+;       vector of the form [y,m,d].
+;
+;       TO_YYDDD: Output is in yyddd format
+;
+;       TO_YYYYDDD: Output is in yyyyddd format
+;
+;       TO_MISSION: Output is in day of mission format
+;
+;       TO_DOM: Same as TO_MISSION
+;
+; OUTPUTS:
+;	    This function returns a number representing the date specified
+;	    by the /TO_xxx keyword.
+;
+; SIDE EFFECTS:
+;	    Hopefully none.
+;
+; RESTRICTIONS:
+;       Only works through the following dates:
+;       START: 1998070(yyyyddd), 98070(yyddd), 0(mission), [1998,03,11](ymd)
+;       STOP: 2003365(yyyyddd), 3365(yyddd), 2121(mission),
+;       [2003,12,31](ymd)
+;
+;       Should (?) work if input is [yyyy,1,doy], and keyword from_ymd set.
+;
+;       NOTE: other undocumented features/bugs may exist. For example,
+;       ymd input [1999,01,32], and keyword to_ymd set correctly gives the
+;       output as [1999,02,01]. Or, input 0 and output /TO_DOY gives 365.
+;
+; PROCEDURE:
+;	    The code works by translating ALL input formats (ymd, yyyyddd,
+;	    doy, etc.) to Day of Mission (or Mission Index, mi). Then, mi
+;	    is converted to the output requested by the /FROM_xxx keyword.
+;
+; EXAMPLE:
+;       print, snoe_date( [2003,12,31], /from_ymd, /to_mission )
+;        2121.00
+;       print, snoe_date( [98,3,11], /from_ymd, /to_yyyyddd )
+;        1998070
+;       print, snoe_date( 0, /from_mission, /to_yyyyddd )
+;        1998070
+;       print, snoe_date( 0, /from_mi, /to_yyd )  ; UNIQUE keywords!
+;        98070
+;
+; MODIFICATION HISTORY:
+; 	Written by:	Ken Mankoff, 2001.08.28 (2001240,1266,01240,etc.) 
+;   09/06/01  TAF;  Added the double keyword so that fractional days
+;                   can be handled. Only works for from_yyddd and
+;                   from_yyyyddd for now.
+;   09/09/01  KDM;  Added Julian day functionality
+;   09/13/01  KDM;  Added to_doy keyword, added print warning for
+;                   Julian keyword.  
+;   09/20/01  KDM;  modified to allow [y,m,d] input to have 2 digit year
+;   04/23/02  KDM;  Commented out JULIAN functionality. Removed double
+;                   keyword (see 09/06/01 revision). Fixed 2 digit
+;                   [y,m,d] error, added comments to code. Added
+;                   /FROM_TODAY keyword, added /FROM_DOY keyword.
+;   06/24/02  KDM;  Added DOM (analogous to MISSION)
+;
+;-
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Translate mission index (= dom) to yyyyddd via a rather simple
+;;; algorithm. Read it to figure it out. NOTE that many other
+;;; functions use this algorithm, and then trim off the output to
+;;; achieve doy or yyddd, etc.
+;;;
+FUNCTION mi2yyyyddd, mi
+COMPILE_OPT hidden
+y = [ 295, 365, 366, 365, 365, 365, 366 ]
+y = total( y, /cumulative )
+index = min( where( mi LE y ) )
+x = [1998070, 1999000, 2000000, 2001000, 2002000, 2003000, 2004000 ]
+
+yyyyddd = x[ index ] + mi
+IF ( index NE 0 ) THEN yyyyddd = yyyyddd - y[index-1]
+return, long( yyyyddd )
+END
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Convert mi to yyddd, by converting it to yyyyddd, and then
+;;; treating it as a string and trimming the 1st 2 characters.
+;;;
+FUNCTION mi2yyddd, mi
+COMPILE_OPT HIDDEN
+yyyyddd = mi2yyyyddd( mi )
+yyddd = LONG( STRMID( STRTRIM( yyyyddd, 2 ), 2 ) )
+return, yyddd
+END
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Convert mi to doy, by converting it to yyyyddd, and then treating
+;;; it as a string, and trimming the 1st 4 characters (the year).
+;;;
+FUNCTION mi2doy, mi
+COMPILE_OPT hidden
+yyyyddd = mi2yyyyddd( mi )
+doy = LONG( STRMID( STRTRIM( yyyyddd, 2 ), 4 ) )
+return, doy
+END
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Convert mi to Year, Month, Day-of-Month. This algorithm is very
+;;; simple, except that 1998 is a "year" with only 295 days, and a
+;;; strange set of months...
+;;;
+FUNCTION mi2ymd, input
+COMPILE_OPT hidden
+mi = input
+
+;;; get the year of the mi
+year_len = [ 295,  365,  366,  365,  365,  365, 366 ]
+year_yyy = [ 1998, 1999, 2000, 2001, 2002, 2003, 2004 ]
+days = total( year_len, /cumulative )
+
+index = max( where( mi GT days ) ) + 1
+y = year_yyy[ index ]
+IF ( y NE 1998 ) THEN BEGIN
+    mi = mi - days[ index-1 ]
+    ;;; get the month of the year of the mi
+    month_len = [31,28,31,30,31,30,31,31,30,31,30,31]
+    IF ( ( y EQ 2000 OR y EQ 2004 ) ) THEN month_len[ 1 ] = 29
+    days = total( month_len, /cumulative )
+    index = max( where( mi GT days ) ) + 1
+    m = index + 1
+    IF ( m NE 1 ) THEN d = mi - days[ index-1 ] ELSE d = mi
+ENDIF ELSE IF ( y EQ 1998 ) THEN BEGIN
+    month_len = [20,30,31,30,31,31,30,31,30,31]
+    days = total( month_len, /cumulative )
+    index = max( where( mi GT days ) ) + 1
+    m = index + 3
+    IF ( m EQ 3 ) THEN d = mi + 11 ELSE d = mi - days[ index-1 ]
+ENDIF
+return, FIX( [ y, m, d ] )
+END
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; This is the main function, that converts any of the inputs to Day
+;;; of Mission (also called Mission Index, or "mi"). Unfortunately,
+;;; this procedure does use a few GOTOs. Sorry!
+;;;
+FUNCTION sd2mission, input, $
+                     from_ymd=from_ymd, $
+                     from_yyddd=from_yyddd, $
+                     ;from_julian=from_julian, $
+                     from_yyyyddd=from_yyyyddd, $
+                     from_doy=from_doy
+COMPILE_OPT hidden
+IF ( keyword_set( from_ymd ) ) THEN BEGIN
+
+    year = input[ 0 ]
+    ;;; if the year from the [y,m,d] triplet was specified by a 2
+    ;;; digit number, handle that case. Note that '02' is really a 1
+    ;;; digit number, hence the "LE 2" clause in the IF statement.
+    IF ( strlen( STRTRIM( input[ 0 ], 2 ) ) LE 2 ) THEN BEGIN
+        IF ( input[ 0 ] EQ '98' ) THEN year = 1998
+        IF ( input[ 0 ] EQ '99' ) THEN year = 1999
+        IF ( input[ 0 ] EQ '0' ) THEN year = 2000
+        IF ( input[ 0 ] EQ '1' ) THEN year = 2001
+        IF ( input[ 0 ] EQ '2' ) THEN year = 2002
+        IF ( input[ 0 ] EQ '3' ) THEN year = 2003
+        IF ( input[ 0 ] EQ '4' ) THEN year = 2004
+    ENDIF ; now we can treat it as [yyyy,m,d]
+    month = input[ 1 ]
+    dom = input[ 2 ]
+    
+    months = [ 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ]
+    IF ( ( YEAR EQ 2000 ) OR ( year EQ 2004 ) ) THEN MONTHS[ 2 ] = 29 ;ly
+    
+    MI = 0
+    CASE YEAR OF
+        1998: MI = -70
+        1999: MI = 295
+        2000: MI = 295 + 365
+        2001: MI = 295 + 365   + 366
+        2002: MI = 295 + 365*2 + 366
+        2003: MI = 295 + 365*3 + 366
+        2004: MI = 295 + 365*4 + 366  ;;this line was added by jnc
+    ENDCASE
+    MI = MI + TOTAL( MONTHS[ 0:MONTH-1 ] )
+    MI = MI + DOM
+    RETURN, MI
+    ;;; DONE translating [y,m,d] to MI
+
+ENDIF ELSE IF ( keyword_set( from_doy ) ) THEN BEGIN
+
+    ;;; for this case, append the *current* YYYY to the doy, and then
+    ;;; pass it off to the /FROM_YYYYDDD algorithm.
+    in = input
+    cmd = 'date -u +%Y'
+    spawn, cmd, out, /sh
+    year = long( out[ 0 ] )
+    in = (year*1000L) + in 
+    GOTO, yr4
+    ;;; DONE translating doy to YYYYdoy. Now let someone else deal
+    ;;; with it.
+
+ENDIF ELSE IF ( keyword_set( from_yyddd ) ) THEN BEGIN
+    
+    ;;; for this case, turn the yyddd into a yyyyddd, and then pass it
+    ;;; off to the /FROM_YYYYDDD algorithm.
+    in = input
+    year = FIX( in / 1.0e4 )
+    IF ( year EQ 9 ) THEN in = 1900000L + in ELSE in = 2000000L + in
+    GOTO, yr4
+    ;;; DONE translating yyddd to YYYYDDD. Now let someone else deal
+    ;;; with it.
+
+ENDIF ELSE IF ( keyword_set( from_yyyyddd ) ) THEN BEGIN
+    
+    ;;; for this case (rather simple), translate YYYYDDD to MI. Simple
+    ;;; get the offset for the years, and then add the day-of-year
+    ;;; offset to that number.
+    in = input
+    yr4:
+    yyyy = FIX( in / 1.0e3 )
+    doy = FIX( in - yyyy * 1e3 )
+ 
+    mi = 0
+    CASE yyyy OF 
+        1998: mi = -70
+        1999: mi = 295
+        2000: mi = 295 + 365
+        2001: mi = 295 + 365 + 366
+        2002: mi = 295 + 365*2 + 366
+        2003: mi = 295 + 365*3 + 366 
+        2004: mi = 295 + 365*4 + 366  ;;this line was added by jnc
+    ENDCASE
+    RETURN, mi + doy
+    ;;; DONE translating YYYYDDD (and DOY, YYDDD) to Mission Index.
+
+ENDIF
+
+;;; *** YOU SHOULD NOT BE HERE ***
+print, " "
+print, "ERROR..."
+print, "From_ keyword NOT set correctly"
+print, "Date is NOT valid!"
+print, " "
+return, -1
+END
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;
+FUNCTION snoe_date, input_const, $
+                    from_doy=from_doy, $
+                    from_ymd=from_ymd, $
+                    from_yyddd=from_yyddd, $
+                    from_mission=from_mission, $
+                    from_dom=from_dom, $
+                    from_yyyyddd=from_yyyyddd, $
+                    from_today=from_today, $
+                    to_doy=to_doy, $
+                    to_ymd=to_ymd, $
+                    to_yyddd=to_yyddd, $
+                    to_mission=to_mission, $
+                    to_dom=to_dom, $
+                    to_yyyyddd=to_yyyyddd, $
+                    _EXTRA=e
+
+;;; if /from_today, then get today in DOY, and treat it as if the
+;;; request was /from_doy. A date input is optional if the /from_today
+;;; keyword is set.
+IF ( keyword_set( from_today ) ) THEN BEGIN
+    spawn, 'date -u +%j', d, /sh
+    input = d[0]
+    from_today = 0 & from_doy = 1
+ENDIF ELSE input = input_const
+
+;;; always translate date to mission index (days since 1998070)
+IF ( keyword_set( from_mission ) OR keyword_set( from_dom ) ) THEN $
+  mi = input[0] ELSE $
+  mi = sd2mission( input, $
+                   from_ymd=from_ymd, $
+                   from_yyddd=from_yyddd, $
+                   from_yyyyddd=from_yyyyddd, $
+                   from_doy=from_doy, $
+                   _EXTRA=e )
+
+;;; translate from mission index to whatever output was requested.
+IF ( keyword_set( to_mission ) OR keyword_set( to_dom ) ) then out = mi $
+ELSE IF ( keyword_set( to_doy ) ) THEN out = mi2doy( mi ) $
+ELSE IF ( keyword_set( to_ymd ) ) THEN out = mi2ymd( mi ) $
+ELSE IF ( keyword_set( to_yyddd ) ) THEN out = mi2yyddd( mi ) $
+ELSE IF ( keyword_set( to_yyyyddd ) ) THEN out = mi2yyyyddd( mi )
+
+RETURN, out
+END
+
+;
+; $Log: snoe_date.pro,v $
+; Revision 1.15  2002/08/01 21:08:44  mankoff
+; Added COMPILE_OPT hidden command to functions.
+; Removed JULIAN commented-out functions
+;
+; Revision 1.14  2002/06/24  21:51:15  mankoff
+; Added FROM_DOM and TO_DOM (same as FROM_MISSION and TO_MISSION)
+;
+@
+
+
+1.15
+log
+@Added COMPILE_OPT hidden command to functions.
+Removed JULIAN commented-out functions
+@
+text
+@d1 1
+a1 1
+; $Id: snoe_date.pro,v 1.14 2002/06/24 21:51:15 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.14 $
+; $Date: 2002/06/24 21:51:15 $
+d129 1
+a129 1
+y = [ 295, 365, 366, 365, 365, 365 ]
+d132 1
+a132 1
+x = [1998070, 1999000, 2000000, 2001000, 2002000, 2003000 ]
+d176 2
+a177 2
+year_len = [ 295,  365,  366,  365,  365,  365 ]
+year_yyy = [ 1998, 1999, 2000, 2001, 2002, 2003 ]
+d186 1
+a186 1
+    IF ( ( y EQ 2000 ) ) THEN month_len[ 1 ] = 29
+d227 1
+d243 1
+d292 1
+d360 4
+@
+
+
+1.14
+log
+@Added FROM_DOM and TO_DOM (same as FROM_MISSION and TO_MISSION)
+@
+text
+@d1 1
+a1 1
+; $Id$
+d3 3
+a5 5
+; $Author$
+; $Revision$
+; $Date$
+;
+; $Log$
+d128 1
+d145 1
+d158 1
+d172 1
+a200 9
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;
+;FUNCTION mi2julian, input
+;return, input + 2450884
+;END
+
+
+d213 1
+a213 1
+
+d354 6
+@
+
+
+1.13
+log
+@doc bug fixed
+@
+text
+@d1 8
+d45 2
+d69 2
+d118 1
+a320 1
+                    ;from_julian=from_julian, $
+d322 1
+a327 1
+                    ;to_julian=to_julian, $
+d329 1
+d343 2
+a344 1
+IF ( keyword_set( from_mission ) ) THEN mi = input[0] ELSE $
+a348 1
+                   ;from_julian=from_julian, $
+d353 1
+a353 1
+IF ( keyword_set( to_mission ) ) then out = mi $
+a357 4
+;ELSE IF ( keyword_set( to_julian ) ) THEN out = mi2julian( mi )
+;IF ( ( keyword_set( from_julian ) ) OR ( keyword_set( to_julian ) ) ) THEN BEGIN
+;    print, "       WARNING: Julian days start at noon"
+;ENDIF
+@
+
+
+1.12
+log
+@big revision. Do a diff to see whats new (man rcsdiff)
+@
+text
+@d61 1
+a61 1
+;	    by the /FROM_xxx keyword.
+@
+
+
+1.11
+log
+@fixed bug introduced from removing DOUBLE
+@
+text
+@d40 5
+d59 7
+d78 5
+a101 3
+;   04/23/02  KDM;  Added DOY as /FROM options. Updated documentation. 
+;                   NOTE: 'date +%j' at the UNIX prompt returns DOY. 
+;                   This is in the IDL function dayofyear.pro
+d103 4
+a106 2
+;                   keyword (see 09/06/01 revision)
+;       
+d111 4
+d124 1
+a124 2
+yyyyddd = long( yyyyddd )
+return, yyyyddd
+d129 2
+d141 2
+d153 3
+d197 3
+d211 4
+a214 1
+    IF ( strlen( STRTRIM( input[ 0 ], 2 ) ) EQ 2 ) THEN BEGIN
+d217 5
+a221 5
+        IF ( input[ 0 ] EQ '00' ) THEN year = 2000
+        IF ( input[ 0 ] EQ '01' ) THEN year = 2001
+        IF ( input[ 0 ] EQ '02' ) THEN year = 2002
+        IF ( input[ 0 ] EQ '03' ) THEN year = 2003
+    ENDIF
+d226 1
+a226 1
+    IF ( ( YEAR EQ 2000 ) ) THEN MONTHS[ 2 ] = 29
+d240 1
+d244 2
+d247 1
+a247 1
+    cmd = 'date +%Y'
+d252 2
+d256 3
+a258 1
+
+d263 2
+d267 4
+a270 1
+
+d278 6
+a283 6
+        1998: mi = doy - 70
+        1999: mi = 295 + doy
+        2000: mi = 295 + 365 + doy
+        2001: mi = 295 + 365 + 366 + doy
+        2002: mi = 295 + 365*2 + 366 + doy
+        2003: mi = 295 + 365*3 + 366 + doy
+d285 3
+a287 3
+    RETURN, mi
+;ENDIF ELSE IF ( keyword_set( from_julian ) ) THEN BEGIN
+;    RETURN, LONG(input) - 2450884L 
+d290 1
+d304 1
+a304 1
+FUNCTION snoe_date, input, $
+d311 1
+d320 9
+d330 1
+a330 1
+IF ( NOT keyword_set( from_mission ) ) THEN $
+d337 1
+a337 2
+                   _EXTRA=e ) $
+ELSE mi = input[ 0 ]
+@
+
+
+1.10
+log
+@commented out Julian, removed double
+@
+text
+@d230 2
+a231 1
+
+@
+
+
+1.9
+log
+@updated documentation
+@
+text
+@a39 5
+;       FROM_JULIAN: A keyword specifying that the input is in Julian
+;       format. Note that with Julian, Modified Julian Dates, and the
+;       fact that these two start at Noon, you should NOT use this
+;       option, as the output is probably buggy...
+;
+a53 4
+;       TO_JULIAN: Output is in Julian Date Format. NOTE that this is
+;       *not* recommended, as with Julian, Modified Julian, and the
+;       fact that these start at noon, the output is probably buggy...
+;
+d77 13
+a89 13
+; 	Written by:	Ken Mankoff, 2001.08.28 (2001240,1266,01240) 
+;       09/06/01        Ted Fisher, Added the double keyword so that
+;                       fractional days can be handled.  Only works 
+;                       for from_yyddd and from_yyyyddd for now.
+;       09/09/01  KDM;  Added Julian day functionality
+;       09/13/01  KDM;  Added to_doy keyword, added print warning for
+;                       Julian keyword. 
+;       09/20/01        modified to allow [y,m,d] input to have 2
+;                       digit year
+;       04/23/02  KDM;  Added DOY as /FROM options. Updated
+;                       documentation. NOTE: date +%j at the UNIX 
+;                       prompt returns DOY. This is in the IDL
+;                       function dayofyear.pro
+d164 3
+a166 3
+FUNCTION mi2julian, input
+return, input + 2450884
+END
+d175 1
+a175 1
+                     from_julian=from_julian, $
+d177 1
+a177 2
+                     from_doy=from_doy, $
+                     double=double
+a230 3
+    doy = DOUBLE( in - yyyy * 1e3 )
+    IF ( NOT keyword_set( double ) ) THEN doy = FIX( doy )
+
+d241 2
+a242 5
+
+ENDIF ELSE IF ( keyword_set( from_julian ) ) THEN BEGIN
+
+    RETURN, LONG(input) - 2450884L 
+
+d262 1
+a262 1
+                    from_julian=from_julian, $
+d268 1
+a268 1
+                    to_julian=to_julian, $
+d275 5
+a279 2
+  mi = sd2mission( input, from_ymd=from_ymd, from_yyddd=from_yyddd, $
+                   from_yyyyddd=from_yyyyddd, from_julian=from_julian, $
+d289 5
+a293 2
+ELSE IF ( keyword_set( to_yyyyddd ) ) THEN out = mi2yyyyddd( mi ) $
+ELSE IF ( keyword_set( to_julian ) ) THEN out = mi2julian( mi )
+a294 6
+IF ( ( keyword_set( from_julian ) ) OR ( keyword_set( to_julian ) ) ) THEN BEGIN
+    print, " "
+    print, "       WARNING: Julian days start at noon"
+    print, " "
+ENDIF
+
+@
+
+
+1.8
+log
+@added from_doy (assumes current year)
+@
+text
+@d6 2
+a7 3
+;       This function translates dates for the SNOE S/C and
+;       mission. It can translate to and from ymd triplets (year,
+;       month, day-of-month), day-of-mission, yyddd, and yyyyddd.
+d10 1
+a10 1
+;       SNOE, date, time
+d16 1
+a16 5
+;	Date: a date, either the day-of-mission (starting with zero,
+;       fractions allowed), a yyddd number, a yyyyddd number, or 
+;       a [ y, m, d ] triplet, where y is 1998 through 2003, m is 1 
+;       through 12, and d is 1 through 31. Julian dates are also valid
+;       inputs
+d37 3
+d41 3
+a43 3
+;       day format. NOTE that Julian day start at 1200 UTC, and this
+;       program assumes it starts 12 hours earler at 0000. Using
+;       Julian may lead to confusion or errors.
+d47 2
+a48 1
+;       nor way to tell what year this day-of-year belongs to.
+d59 3
+a61 1
+;       TO_JULIAN: Output is in julian day format. 
+a62 5
+;       DOUBLE: Input is double precision floating point representing
+;       time of day.  Output double precision floating point.  Only works
+;       for FROM_YYDDD and FROM_YYYYDDD for now.
+;
+;
+d73 1
+a73 1
+;       output as [1999,02,01]
+d82 1
+a82 1
+;       print, snoe_date( 0, /from_mi, /to_yyd )
+d90 3
+a92 3
+;       09/09/01        Ken Mankoff, Added Julain day functionality
+;       09/13/01        Ken Mankoff, Added to_doy keyword, added
+;                       print warning for Julain keyword.
+d95 4
+@
+
+
+1.7
+log
+@fixed doy bug (uses yyyyddd, not yyddd)
+@
+text
+@d186 1
+d219 9
+d275 1
+d293 1
+@
+
+
+1.6
+log
+@allow 2 digit ymd inputs
+@
+text
+@d131 2
+a132 2
+yyddd = mi2yyddd( mi )
+doy = LONG( STRMID( STRTRIM( yyddd, 2 ), 2 ) )
+@
+
+
+1.5
+log
+@added to_doy
+@
+text
+@d27 2
+a28 1
+;       third element is the day-of-month.
+d52 1
+a52 1
+;       vector of the form [y,m,d]
+d82 2
+d91 1
+a91 1
+;       06/09/01        Ted Fisher, Added the double keyword so that
+d94 2
+a95 2
+;       06/09/01        Ken Mankoff, Added Julain day functionality
+;       06/13/01        Ken Mankoff, Added to_doy keyword, added
+d97 3
+d191 8
+@
+
+
+1.4
+log
+@added warning for julian day offset (starts at noon relative to utc)
+@
+text
+@d42 3
+a44 1
+;       day format, where 2450884 is 1998.070, or March 11, 1998.
+d46 4
+d59 1
+a59 1
+;       TO_JULIAN: Output is in julian day format
+d88 6
+a93 4
+;       6 September 2001  Ted Fisher, Added the double keyword so that
+;                         fractional days can be handled.  Only works 
+;                         for from_yyddd and from_yyyyddd for now.
+;       6 September 2001  Ken Mankoff, Added Julain day functionality
+d124 10
+d256 1
+d273 1
+d285 1
+a285 1
+return, out
+@
+
+
+1.3
+log
+@added julian date functionality
+@
+text
+@d259 6
+@
+
+
+1.2
+log
+@Added support for double precision fractional days for from_yyddd and from_yyyyddd.
+@
+text
+@d17 5
+a21 3
+;	Date: a date, either the day-of-mission (starting with zero), a
+;	yyddd number, a yyyyddd number, or a [ y, m, d ] triplet, where
+;       y is 1998 through 2003, m is 1 through 12, and d is 1 through 31. 
+d37 3
+a39 2
+;       FROM_MISSION: A keyword specifying that the input in day of
+;       mission format, where zero (0) is the first day of the mission.
+d41 3
+d51 1
+a51 1
+;       TO_MISSION: Output is in day of mission format.
+d53 2
+d85 1
+d146 6
+d153 1
+d158 5
+a162 2
+	from_ymd=from_ymd, from_yyddd=from_yyddd, $
+	from_yyyyddd=from_yyyyddd, double=double
+d199 2
+a200 5
+    if(keyword_set(double)) then begin
+        doy = DOUBLE(in - yyyy * 1e3)
+    endif else begin
+        doy = FIX(in - yyyy * 1e3)
+    endelse
+d212 5
+d233 11
+a243 4
+	from_ymd=from_ymd, from_mission=from_mission, $
+	from_yyddd=from_yyddd, from_yyyyddd=from_yyyyddd, $
+	to_ymd=to_ymd, to_mission=to_mission, to_yyddd=to_yyddd, $
+	to_yyyyddd=to_yyyyddd, _EXTRA=e
+d248 2
+a249 1
+	from_yyyyddd=from_yyyyddd, _EXTRA=e ) $
+d256 2
+a257 1
+ELSE IF ( keyword_set( to_yyyyddd ) ) THEN out = mi2yyyyddd( mi )
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d47 5
+d74 3
+d143 1
+a143 1
+	from_yyyyddd=from_yyyyddd
+a178 1
+    doy = FIX( in - yyyy * 1e3 )
+d180 6
+d220 1
+a220 1
+	from_yyyyddd=from_yyyyddd ) $
+@

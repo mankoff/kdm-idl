@@ -1,0 +1,543 @@
+head	1.7;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.7
+date	2002.09.20.23.41.41;	author mankoff;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2002.09.19.01.25.13;	author mankoff;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2002.09.10.07.08.53;	author mankoff;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2002.09.01.22.53.53;	author mankoff;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2002.08.29.18.18.37;	author mankoff;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2002.08.22.03.56.35;	author mankoff;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.07.26.20.07.48;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.7
+log
+@L3 DB now has 50 lats (-55 to 55). Changed code to handle this
+@
+text
+@; $Id: l3_lat_alt_day.pro,v 1.6 2002/09/19 01:25:13 mankoff Exp mankoff $
+;
+; $Author: mankoff $
+; $Revision: 1.6 $
+; $Date: 2002/09/19 01:25:13 $
+;
+
+PRO L3_lat_alt_day, coords, yyyyddd, yyyyddd1, manual=manual, $
+                    lv=lv, sv=sv, ps=ps, ch=ch, $
+                    log=log, mask=mask, orbit=orbit, $
+                    _EXTRA=e
+
+;+
+; NAME:
+;	L3_LAT_ALT_DAY
+;
+; PURPOSE:
+;   This routine displays one orbit of L3 data at a time. A movie can be
+;   generated, or a single day, or a PS file. You can step through the
+;   data orbit-by-orbit, or day-by-day but only for a given orbit.
+;
+; CATEGORY:
+;   SNOE, image, movie
+;
+; CALLING SEQUENCE:
+;   L3_LAT_ALT_DAY, Coord, YYYYDDD YYYYDDD1
+;
+; INPUTS:
+;   COORD: The coordinate system of the data, either 'geo' or 'mag'
+;   YYYYDDD: The day to display.
+;
+; OPTIONAL INPUTS:
+;   YYYYDDD1: The last day to display in a MOVIE sequence
+;	
+; KEYWORD PARAMETERS:
+;   ORBIT: Set this to the orbit number to view (0 through 15) if you
+;       want to see 1 orbit per day. If not set, all orbits are viewed.
+;   MANUAL: Set this to control the movie manually
+;           ,: prev day (<)
+;           q: Quit movie
+;           j: Jump to day
+;           l: Toggle LOG mode
+;           any other key: next day
+;   LV: The large value of the data [ !SNOE.f.L3_lv ]
+;   SV: The small value of the data [ lv / 20. ] used with /LOG only
+;   PS: Set this keyword to produce a POSTSCRIPT image
+;   CH: Set this to the desired channel to view [ 2 ]
+;   LOG: Set this if the log of the data should be imaged
+;   MASK: Set this to mask out part of the data (PMCs)
+;
+;   EXTRA=e is used for:
+;       IMDISP: (INTERP, OUT_POS, etc. )
+;       DEVICE: (FILENAME, BITS_PER_PIXEL, PORTRAIT, LANDSCAPE, etc. )
+;       others...
+;
+; OUTPUTS:
+;   An image, or a PS file
+;
+; SIDE EFFECTS:
+;   Uses the PS device if /PS set. Uses the current WINDOW
+;
+; RESTRICTIONS:
+;   Must be in a L3-type directory (needs NO_?_den_???.dat)
+;
+; EXAMPLE:
+;   To generate an image:
+;   L3_lat_alt_day, 'geo', 1998079
+;   L3_lat_alt_day, 'mag', 2002150, /LOG, /PS, /INTERP, FILENAME='foo.ps'
+;
+;   To watch a movie:
+;   L3_lat_alt_day, 'geo', 1998079, 1999079, /LOG
+;   L3_lat_alt_day, 'geo', 1998079, 1999079, /LOG, ORBIT=7
+;   
+;   To step through:
+;   L3_lat_alt_day, 'geo', 1998079, /MANUAL
+;   L3_lat_alt_day, 'geo', 1998079, ORBIT=0, /MANUAL
+;
+; MODIFICATION HISTORY:
+;   Written by: KDM; 2002-07-26
+;   KDM; 2002-08-21; Fixed orbit movie bug
+;   KDM; 2002-08-29; Fixed altitude axis error. Made tickv
+;                    exact. Changed title. Fixed linear CBAR 
+;   KDM; 2002-09-01; /swap_if_big_endian
+;   KDM; 2002-09-09; added _EXTRA=e to OPENR
+;   KDM; 2002-09-18; handles L3 files with 16 orbits per day
+;-
+
+IF ( N_PARAMS() EQ 0 ) THEN BEGIN
+    DOC_LIBRARY, 'L3_lat_alt_day'
+    MESSAGE, "Must provide COORDS and YYYYDDD", /CONT
+    RETURN
+END
+
+IF ( NOT KEYWORD_SET( ch ) ) THEN ch = 2
+file = STRCOMPRESS('NO_' + STRING(ch) + '_den_' + coords + '.dat', /REMOVE_ALL)
+IF ( coords EQ 'geo' ) THEN xtitle = 'Geographic ' ELSE xtitle = 'Geomagnetic '
+xtitle = xtitle + 'Latitude'
+
+IF ( NOT KEYWORD_SET( lv ) ) THEN lv = !SNOE.f.L3_lv
+IF ( NOT KEYWORD_SET( sv ) ) THEN sv = lv / 20.
+dom = SNOE_DATE( yyyyddd, /from_yyyyddd, /to_dom )
+IF ( KEYWORD_SET( manual ) OR KEYWORD_SET( yyyyddd1 ) ) THEN BEGIN
+    IF ( KEYWORD_SET( yyyyddd1 ) ) THEN $
+      dom1 = SNOE_DATE( yyyyddd1, /from_yyyyddd, /to_dom )
+    IF ( KEYWORD_SET( manual ) ) THEN dom1 = !SNOE.d.now_dom
+ENDIF ELSE dom1 = dom
+
+OPENR, lun, file, /SWAP_IF_BIG_ENDIAN, /GET_LUN, _EXTRA=e
+datafile = ASSOC( lun, !SNOE.f.L3 )
+ERASE
+
+IF ( KEYWORD_SET( ps ) ) THEN BEGIN
+    disp = !d.name
+    SET_PLOT, 'ps'
+    DEVICE, /COLOR, BITS=8, _EXTRA=e
+    ss = 4
+ENDIF ELSE ss = 2
+charsize = 1.5
+charthick = ss & pth = ss & xth = ss & yth = ss
+
+;;; IMAGE and CBAR positions
+ipos=[ 0.18, 0.20, 0.90, 0.85 ]
+cpos=[ 0.18+0.10, 0.77, 0.90-0.10, 0.79 ]
+
+alt_lo = !SNOE.f.l3_alt[ 30 ]
+alt_hi = !SNOE.f.l3_alt[ 0 ]
+
+;;; CBAR labels
+;;;
+;;; NOTE: cut-and-paste this section into the "TOGGLE LOG" section
+;;; below if any changes are made
+;;;
+IF ( KEYWORD_SET( log ) ) THEN BEGIN
+    xtickv = [3e7,6e7,1e8,3e8,6e8] & xtickn = [' 3',' 6','10','30','60']
+    title = 'Log Nitric Oxide Density!c(x10!u7!n molecules / cm!u3!n)'
+ENDIF ELSE BEGIN ;;; LINEAR
+    xtickv = MAKEX( CEIL(  sv/1.0e8 ) * 1e8, (FLOOR( lv/1.0e8 )>1) * 1e8, 1e8 )
+    xtickn = STRTRIM( FIX(xtickv / 1e7), 2 )
+    title = 'Nitric Oxide Density!c(x10!u7!n molecules / cm!u3!n)'
+ENDELSE
+
+xday = dom ;;; day currently being displayed (increments for movie)
+xorb = 0   ;;; orb currently being displayed (increments for movie)
+IF ( n_elements( orbit ) NE 0 ) THEN xorb = orbit
+WHILE (1) DO BEGIN
+
+    data = datafile[ *,*, xorb, xday ]
+    data = data[ 7:43, 0:30 ] ;;; CHECK THIS FOR CORRECTNESS WITH ALT
+    data[ *, [0,1,2,3] ] = 0 ;;; zero out top 4 columns
+    data[ *, [27,28,29] ] = 0 ;;; zero out bot 3 columns
+    IF ( KEYWORD_SET( mask ) ) THEN BEGIN
+        ;    data[ [0,1,35,36], * ] = 0
+        ;    data[ [1,35], 26 ] = 0
+        ;    data[ [1,2,34,35], 27 ] = 0
+        MESSAGE, "MASK not yet implemented", /CONT
+    ENDIF
+
+    IF ( KEYWORD_SET( log ) ) THEN BEGIN
+        data = (ALOG10( (data/ (sv) )>1) )
+        data = (255./ALOG10( lv/sv )) * data
+    ENDIF ELSE data = ( data * 254 / lv) > 0 ;;; LINEAR
+
+    ;;; CREATE IMAGE
+    imdisp, data, ERASE=0, $
+      /ORDER, /NOSCALE, $
+      /AXIS, $
+      xrange=[-92.5,92.5], xticks=6, xstyle=1, xminor=3, xticklen=-0.02, $
+      xtickv=MAKEX(-90,90,30),xtickn=STRTRIM(FIX(MAKEX(-90,90,30)),2), $
+      yrange=[alt_lo-(5/3.),alt_hi+(5/3.)], $
+      yticks=5, ystyle=1, yminor=2, yticklen=-0.02, $
+      ytickv=MAKEX( alt_lo, alt_hi, 20 ), $
+      ytickn=STRTRIM( FIX( MAKEX( alt_lo, alt_hi, 20 ) ), 2 ), $
+      title=title, ytitle='Altitude (km)', xtitle=xtitle, $
+      charsize=charsize, charthick=charthick, $
+      thick=pth, xthick=xth, ythick=yth, $
+      POSITION=ipos, /USE, $
+      _EXTRA=e
+    
+    ;;; CBAR
+    CBAR, /HORIZONTAL, /TOP, XLOG=KEYWORD_SET( log ), $
+      /XST, XRANGE=[ sv,lv ], $
+      xtickv=xtickv, xtickn=xtickn, xticks=n_elements(xtickv)-1, $
+      POSITION=cpos, color=!SNOE.ct.fg, $
+      CHARSIZE=charsize, $
+      charth=charthick
+    
+    ;;; YYYYDDD title
+    XYOUTS, 0, 152.5, $
+      STRTRIM( SNOE_DATE( xday,/from_dom,/to_yyyyddd), 2 ) + '.' + $
+      STRTRIM( xorb, 2 ), $
+      alignment=.5, charsize=charsize, charth=charthick, $
+      COLOR=!SNOE.ct.fg
+
+    IF ( KEYWORD_SET( manual ) ) THEN BEGIN
+        k = GET_KBRD( 1 )
+        IF ( k EQ string(10b) ) THEN k = 'n' ; enter
+        CASE k OF
+            ',': BEGIN
+                IF ( N_ELEMENTS( orbit ) EQ 0 ) THEN BEGIN
+                    xorb = xorb -1
+                    IF ( xorb EQ -1 ) THEN BEGIN
+                        xorb = 15
+                        xday = xday - 1
+                    ENDIF
+                ENDIF ELSE xday = xday -1 ;;; same orbit, previous day
+            END
+            'q': GOTO, done
+            'j': BEGIN
+                READ, jump, PROMPT='New YYYYDDD: '
+                xday = SNOE_DATE( jump, /from_yyyyddd, /to_dom )
+            END
+            'l': BEGIN ;;; TOGGLE LOG
+                log = NOT KEYWORD_SET( log )+2 ;;; TOGGLE log
+                ERASE
+                IF ( KEYWORD_SET( log ) ) THEN BEGIN
+                    xtickv = [3e7,6e7,1e8,3e8,6e8]
+                    xtickn = [' 3',' 6','10','30','60']
+                    title = 'Log Nitric Oxide Density!c(x10!u7!n moleclues / cm!u3!n)'
+                ENDIF ELSE BEGIN ;;; LINEAR
+                    xtickv = MAKEX( CEIL(  sv/1.0e8 ) * 1e8, $
+                                    (FLOOR( lv/1.0e8 )>1) * 1e8, $
+                                    1e8 )
+                    xtickn = STRTRIM( FIX(xtickv / 1e7), 2 )
+                    xtickn = STRTRIM( FIX(xtickv / 1e7), 2 )
+                    title = 'Nitric Oxide Density!c(x10!u7!n molecules / cm!u3!n)'
+                ENDELSE
+            END
+            ELSE: BEGIN
+                IF ( N_ELEMENTS( orbit ) EQ 0 ) THEN BEGIN
+                    IF ( xorb EQ 15 ) THEN xday = xday + 1
+                    xorb = ( xorb + 1 ) MOD 16
+                ENDIF ELSE xday = xday + 1
+            END
+        ENDCASE
+    ENDIF ELSE BEGIN
+        IF ( N_ELEMENTS( orbit ) EQ 0 ) THEN BEGIN
+            IF ( xorb EQ 15 ) THEN xday = xday + 1
+            xorb = ( xorb + 1 ) MOD 16
+        ENDIF ELSE xday = xday + 1
+    ENDELSE
+
+    ;;; allow generation of postscript movies
+    IF ( keyword_set( ps ) ) THEN BEGIN
+        erase
+        print, snoe_date( xday, /from_dom, /to_yyyyddd )
+    ENDIF
+    IF ( xday GE dom1 ) THEN GOTO, done
+ENDWHILE
+done:
+
+IF ( KEYWORD_SET( ps ) ) THEN BEGIN
+    DEVICE, /CLOSE
+    SET_PLOT, disp
+ENDIF
+
+FREE_LUN, lun
+END
+
+;
+; $Log: l3_lat_alt_day.pro,v $
+; Revision 1.6  2002/09/19 01:25:13  mankoff
+; handles 16 orbits per day
+;
+; Revision 1.5  2002/09/10 07:08:53  mankoff
+;  added _EXTRA=e to OPENR, so it can be used on old LASP data
+;  (big_endian) without modification
+;
+; Revision 1.4  2002/09/01 22:53:53  mankoff
+; /swap_if_big_endian
+;
+; Revision 1.3  2002/08/29 18:18:37  mankoff
+; Fixed altitude axis error.
+; Made tickv alignments exact
+; changed title to 2-line title
+; Fixed linear CBAR
+;
+; Revision 1.2  2002/08/22 03:56:35  mankoff
+; Fixed orbit movie bug. Now orbit=0 is handled correctly
+;
+; Revision 1.1  2002/07/26 20:07:48  mankoff
+; Initial revision
+;
+;
+@
+
+
+1.6
+log
+@handles 16 orbits per day
+@
+text
+@d1 1
+a1 1
+; $Id: l3_lat_alt_day.pro,v 1.5 2002/09/10 07:08:53 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.5 $
+; $Date: 2002/09/10 07:08:53 $
+d44 1
+a44 1
+;   LV: The large value of the data [ !SNOE.f.l4_lv ]
+d99 1
+a99 1
+IF ( NOT KEYWORD_SET( lv ) ) THEN lv = !SNOE.f.l3_lv
+d109 1
+a109 1
+datafile = ASSOC( lun, !SNOE.f.l3 )
+d148 1
+a148 1
+    data = data[ 0:36, 0:30 ] ;;; CHECK THIS FOR CORRECTNESS WITH ALT
+d261 3
+@
+
+
+1.5
+log
+@ added _EXTRA=e to OPENR, so it can be used on old LASP data
+ (big_endian) without modification
+@
+text
+@d1 1
+a1 1
+; $Id: l3_lat_alt_day.pro,v 1.4 2002/09/01 22:53:53 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.4 $
+; $Date: 2002/09/01 22:53:53 $
+d36 1
+a36 1
+;   ORBIT: Set this to the orbit number to view (0 through 14) if you
+d85 1
+d202 1
+a202 1
+                        xorb = 14
+d230 2
+a231 2
+                    IF ( xorb EQ 14 ) THEN xday = xday + 1
+                    xorb = ( xorb + 1 ) MOD 15
+d237 2
+a238 2
+            IF ( xorb EQ 14 ) THEN xday = xday + 1
+            xorb = ( xorb + 1 ) MOD 15
+d261 4
+@
+
+
+1.4
+log
+@/swap_if_big_endian
+@
+text
+@d1 1
+a1 1
+; $Id: l3_lat_alt_day.pro,v 1.3 2002/08/29 18:18:37 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.3 $
+; $Date: 2002/08/29 18:18:37 $
+d84 1
+d107 1
+a107 1
+OPENR, lun, file, /SWAP_IF_BIG_ENDIAN, /GET_LUN
+d260 3
+@
+
+
+1.3
+log
+@Fixed altitude axis error.
+Made tickv alignments exact
+changed title to 2-line title
+Fixed linear CBAR
+@
+text
+@d1 1
+a1 1
+; $Id: l3_lat_alt_day.pro,v 1.2 2002/08/22 03:56:35 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.2 $
+; $Date: 2002/08/22 03:56:35 $
+d79 5
+a83 5
+; 	Written by: KDM; 2002-07-26
+;              KDM; 2002-08-21; Fixed orbit movie bug
+;              KDM; 2002-08-29; Fixed altitude axis error. Made tickv
+;                               exact. Changed title. Fixed linear CBAR
+;
+d106 1
+a106 1
+OPENR, lun, file, /SWAP_ENDIAN, /GET_LUN
+d259 6
+@
+
+
+1.2
+log
+@Fixed orbit movie bug. Now orbit=0 is handled correctly
+@
+text
+@d1 1
+a1 1
+; $Id: l3_lat_alt_day.pro,v 1.1 2002/07/26 20:07:48 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.1 $
+; $Date: 2002/07/26 20:07:48 $
+d79 4
+a82 2
+; 	Written by:	KDM; 2002-07-26
+;               KDM; 2002-08-21; Fixed orbit movie bug
+d108 1
+d123 3
+d132 2
+a133 2
+    xtickv = [3e7,6e7,1e8,3e8,6e8] / 1e7 & xtickn = [' 3',' 6','10','30','60']
+    title = 'Log Nitric Oxide Density (10!u7!n cm!u-3!n)'
+d135 1
+a135 1
+    xtickv = MAKEX( CEIL(  sv/1.0e8 ) * 1e8, FLOOR( lv/1.0e8 )>1 * 1e8, 1e8 )
+d137 1
+a137 1
+    title = 'Nitric Oxide Density (10!u7!n cm!u-3!n)'
+d146 3
+a148 7
+
+
+    data = data[ 0:36, 0:27 ] ;;; CHECK THIS FOR CORRECTNESS WITH ALT
+
+
+    data[ *, 0:3 ] = 0 ;;; zero out top 3 columns
+    data[ *, [25,26,27] ] = 0 ;;; zero out bot 3 columns
+d165 6
+a170 2
+      xrange=[-90,90], xticks=6, xstyle=1, xminor=3, xticklen=-0.02, $
+      yrange=[80,180], yticks=5, ystile=1, yminor=2, yticklen=-0.02, $
+d179 1
+a179 1
+      /XST, XRANGE=[ sv,lv ]/1.0e7, $
+d186 1
+a186 1
+    XYOUTS, 0, 160.5, $
+d214 1
+a214 1
+                    xtickv = [3e7,6e7,1e8,3e8,6e8] / 1e7
+d216 1
+a216 1
+                    title = 'Log Nitric Oxide Density (10!u7!n cm!u-3!n)'
+d219 3
+a221 1
+                                    FLOOR( lv/1.0e8 )>1 * 1e8, 1e8 )
+d223 1
+a223 1
+                    title = 'Nitric Oxide Density (10!u7!n cm!u-3!n)'
+d259 3
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+; $Id$
+d3 3
+a5 3
+; $Author$
+; $Revision$
+; $Date$
+d80 1
+d191 1
+a191 1
+                IF ( NOT KEYWORD_SET( orbit ) ) THEN BEGIN
+d219 1
+a219 1
+                IF ( NOT KEYWORD_SET( orbit ) ) THEN BEGIN
+d221 1
+a221 1
+                    xorb = xorb + 1 MOD 15
+d226 1
+a226 1
+        IF ( NOT KEYWORD_SET( orbit ) ) THEN BEGIN
+d228 1
+a228 1
+            xorb = xorb + 1 MOD 15
+d250 4
+a253 1
+; $Log$
+@

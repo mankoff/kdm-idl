@@ -1,0 +1,667 @@
+head	1.7;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.7
+date	2002.09.26.01.05.03;	author mankoff;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2002.07.24.02.19.05;	author mankoff;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2002.02.26.21.16.41;	author fishert;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2001.10.24.22.07.01;	author fishert;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.10.24.20.19.19;	author mankoff;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.10.23.23.14.06;	author fishert;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.10.23.23.08.10;	author fishert;	state Exp;
+branches;
+next	;
+
+
+desc
+@Old working version, does not preserve graphics device, keywords not optional
+@
+
+
+1.7
+log
+@added - to close IDL comment
+@
+text
+@; $Id: mag_grid.pro,v 1.6 2002/07/24 02:19:05 mankoff Exp mankoff $
+;
+; $Author: mankoff $
+; $Revision: 1.6 $
+; $Date: 2002/07/24 02:19:05 $
+;
+;+
+; NAME:
+;	MAG_GRID
+;
+; PURPOSE:
+;       Return a magnetic grid warped to the current map projection,
+;       that can be overlayed on an image.
+;
+; CATEGORY:
+;       SNOE, image, mapping
+;
+; CALLING SEQUENCE:
+;       result = mag_grid()
+;
+; INPUTS:
+;       NONE
+;
+; OPTIONAL INPUTS:
+;       NONE
+;
+; KEYWORD PARAMETERS:
+;       HIRES:  Set this keword equal to one (1) to produce a high
+;               quality grid. This may take some time (less than a
+;               minute). The default is a low quality (but quick)
+;               image
+;
+;       MAGTHICK: Set this to the line thickness desired.
+;
+;       OVAL:   Set this to the thickness desired for the auroral oval
+;               grid lines (i.e. the 60 and 70 degree latitude lines)
+;
+;       LATDEL, LONDEL: See MAP_GRID documentation
+;
+; OUTPUTS:
+;       This function returns a bytescaled image. The size is the size
+;       of the current device. The array returned contains the value 1
+;       where the field lines are, and 0 everywhere else.
+;
+; SIDE EFFECTS:
+;       NONE known
+;
+; RESTRICTIONS:
+;       Must call map_set before this function
+;       Requires mag_grid.pro
+;
+; PROCEDURE:
+;       This function warps a CGM magnetic lookup table (LUT) onto the
+;       current map projection. Since our LUTs are at a 1 degree
+;       resolution, the quality of the lines is poor. Hence the /HIRES
+;       keyword. The algorithm is the same in this case, but the image
+;       is created much larger (approx 20 times), and then shrunk
+;       down. The result is a higher quality image.
+;
+; EXAMPLE:
+;
+;        ;;; set up and display the data
+;        MAP_SET, 88.5, 277.5, /cyl, /iso
+;        TV, MAP_IMAGE( data, xx, yy ), xx, yy
+;        img = TVRD()
+;
+;        ;;; get the grid for the above map_set projection
+;        grid0 = MAG_GRID()
+;        grid1 = MAG_GRID( /HIRES, YEAR=2000, magthick=2, oval=4 )
+;
+;        ;;; overlay grid on image, and display
+;        magGridColor = 255
+;        img[ WHERE( grid1 EQ 1 ) ] = magGridColor
+;        TV, img
+;
+; MODIFICATION HISTORY:
+; 	Written by:	Ted Fisher, Summer 2000
+;       Oct, 2001       TAF: made lots of misc usability improvements
+;       Oct, 2001       KDM: added documentation, removed xysize
+;       Jul, 2002       KDM: Removed YEAR keyword. LOAD_CGM has
+;                            own. Uses _EXTRA=e
+;
+;-
+
+FUNCTION mag_grid, hires=hires, magthick=magthick, $
+                   oval=oval, kfactor=kfactor, latdel=latdel, $
+                   londel=londel, _EXTRA=e
+
+mGridColor = 1
+disp = !d.name
+
+IF ( NOT keyword_set( magthick ) ) THEN magthick = 1
+IF ( n_elements( latdel ) EQ 0 ) THEN latdel = 10
+IF ( n_elements( londel ) EQ 0 ) THEN londel = 30
+
+IF ( disp EQ 'X' ) THEN BEGIN
+    xsize = !d.x_size
+    ysize = !d.y_size
+ENDIF ELSE IF ( disp EQ 'Z' ) THEN BEGIN
+    saved_z =  tvrd()           ; store the current image in the z buffer
+    xsize = (size(saved_z,/dim))[0]
+    ysize = (size(saved_z,/dim))[1]
+ENDIF ELSE IF ( disp EQ 'PS' ) THEN BEGIN 
+            ;;; convert from m^-5 to pixels
+    xsize = floor(float(!d.x_size) / 28.)
+    ysize = floor(float(!d.y_size) / 28.)
+ENDIF
+
+;;; set up the z buffer
+set_plot,'z'                    
+    
+; a scaling factor to get smoother lines
+IF ( keyword_set( kfactor ) ) THEN BEGIN
+    k = kfactor
+ENDIF ELSE IF ( keyword_set ( hires ) ) THEN BEGIN
+    k = 20                
+ENDIF ELSE BEGIN 
+    k = 3
+ENDELSE 
+
+device,set_resolution=[361*k,181*k]
+erase
+
+load_cgm, mag, grid='mag'
+mag = reform(temporary(mag), 65341, 6)
+    
+; lat and lon separation
+n = latdel
+m = londel
+
+dummy = 999.99
+    
+glat = mag[*,0]
+glon = mag[*,1]
+mlat = mag[*,2]
+mlon = mag[*,3]  
+
+                                ; set the parallels
+FOR i=-90, 90, n DO BEGIN
+    index = where((mlat EQ i)     AND $
+                  (   i NE 0)     AND $
+                  (glat LT dummy) AND $
+                  (glon LT dummy), count)
+    IF(count GT 0) THEN BEGIN
+        lattemp = glat[index]
+        lontemp = glon[index]
+        
+        plots, fix(lontemp[0]*k), fix((lattemp[0]+90)*k), $
+               color=mGridColor, /device, _EXTRA=e,thick=magthick*k
+        
+        FOR j=1., count-1 DO BEGIN
+            
+            IF ( keyword_set( oval ) AND (i EQ -70 OR $
+                                          i EQ -60 OR $
+                                          i EQ  60 OR $
+                                          i EQ  70)) THEN BEGIN
+                thickness = oval*k
+            ENDIF ELSE BEGIN 
+                thickness = magthick*k
+            ENDELSE
+            
+            IF ( abs( lontemp[j] - lontemp[j-1] ) GT 90 ) THEN BEGIN
+                
+                a = [fix(lontemp[j-1]*k), fix((lattemp[j-1]+90)*k)]
+                d = [fix(lontemp[j]*k),   fix((lattemp[j]+90)*k)]
+                
+                c = [0,     (a[1]+d[1])/2]
+                b = [361*k-1, (a[1]+d[1])/2]
+                
+                plots, [[a],[b]], $
+                       color=mGridColor, /device, _EXTRA=e, $
+                       thick=thickness
+                plots, [[c],[d]], $
+                       color=mGridColor, /device, _EXTRA=e, $
+                       thick=thickness
+                
+            ENDIF ELSE BEGIN
+                plots, fix(lontemp[j]*k), $
+                       fix((lattemp[j]+90)*k), $
+                       /CONTINUE, color=mGridColor, /device,      $
+                       _EXTRA=e, thick=thickness   
+            ENDELSE
+        ENDFOR 
+    ENDIF 
+ENDFOR 
+
+lat_toler = 5   ; tolerance to get around the poorly defined cgm equator
+
+; set the meridians
+FOR i = 0, 361, m DO BEGIN
+    index = where((mlon EQ i)                                    AND $
+                  ((mlat GT lat_toler) OR (mlat LT -lat_toler))  AND $
+                  (glat LT dummy)                                AND $
+                  (glon LT dummy), count) 
+    
+    IF ( count GT 0 ) THEN BEGIN
+        lattemp = glat[index]
+        lontemp = glon[index]
+        
+        plots, fix(lontemp[0]*k), fix((lattemp[0]+90)*k), $
+               color=mGridColor, /device, _EXTRA=e, thick=magthick*k
+        
+        FOR j = 1., count-1 DO BEGIN 
+            IF ( abs( lontemp[j] - lontemp[j-1] ) GT 90 ) THEN BEGIN
+                
+                a = [fix(lontemp[j-1]*k), fix((lattemp[j-1]+90)*k)]
+                d = [fix(lontemp[j]*k),   fix((lattemp[j]+90)*k)]
+                
+                b = [0,     (a[1]+d[1])/2]
+                c = [361*k-1, (a[1]+d[1])/2]
+                
+                plots, [[a],[b]], $
+                       color=mGridColor, /device, _EXTRA=e, $
+                       thick=magthick*k
+                plots, [[c],[d]], $
+                       color=mGridColor, /device, _EXTRA=e, $
+                       thick=magthick*k
+            ENDIF ELSE BEGIN 
+                plots, fix(lontemp[j]*k), $
+                       fix((lattemp[j]+90)*k), $   
+                       /CONTINUE, color=mGridColor, /device,      $   
+                       _EXTRA=e, thick=magthick*k
+            ENDELSE 
+        ENDFOR 
+    ENDIF 
+ENDFOR 
+
+cgm_temp = tvrd()
+device, set_resolution=[xsize, ysize]
+erase
+tv, map_image(cgm_temp, xx, yy, lonmin=0, lonmax=360, /compress), xx, yy
+cgm_temp = tvrd()
+
+; display cleanup and restoration
+set_plot, disp                
+IF ( disp EQ 'Z' ) THEN BEGIN 
+    size = size( saved_z, /dim )
+    xs = size[ 0 ] & ys = size[ 1 ]
+    device, set_resolution=[ xs, ys ]
+    erase
+    tv, saved_z
+ENDIF 
+RETURN, CGM_TEMP
+END                             ; mag_grid
+
+;
+; $Log: mag_grid.pro,v $
+; Revision 1.6  2002/07/24 02:19:05  mankoff
+; Removed YEAR keyword (LOAD_CGM has its own, use _EXTRA=e)
+; Added documentation
+;
+;
+@
+
+
+1.6
+log
+@Removed YEAR keyword (LOAD_CGM has its own, use _EXTRA=e)
+Added documentation
+@
+text
+@d1 1
+a1 1
+; $Id$
+d3 3
+a5 3
+; $Author$
+; $Revision$
+; $Date$
+d83 1
+d247 5
+a251 1
+; $Log$
+@
+
+
+1.5
+log
+@fixed typo in comments
+@
+text
+@d1 6
+d16 1
+a16 1
+;       SNOE image, SNOE mapping
+a32 3
+;       YEAR:   Set this to the year of the CGM model to use. Default
+;               is 1998. Valid values are 1998 through 2005
+;
+d80 2
+d84 1
+a84 1
+FUNCTION mag_grid, hires=hires, year=year, magthick=magthick, $
+a91 1
+IF ( N_ELEMENTS( year ) eq 0 ) THEN year = 1998
+d123 1
+a123 1
+load_cgm, mag, year=year, grid='mag'
+d244 4
+@
+
+
+1.4
+log
+@fixed year bug
+@
+text
+@d38 1
+a38 1
+;       This function returns a bytscaled image. The size is the size
+@
+
+
+1.3
+log
+@commented, removed xysize, cleaned up...
+@
+text
+@d87 1
+a87 1
+IF ( N_ELEMENTS( year ) NE 0 ) THEN year = 1998
+@
+
+
+1.2
+log
+@Preserves former graphics device, and all keywords have defaults.
+@
+text
+@d1 3
+a3 6
+; File: mag_grid.pro
+; Author:  Ted Fisher (Ted.Fisher@@colorado.edu) 13 August 2001
+; Purpose:  Draws a cgm grid onto a map projection.  Requires that
+;   map_set has been called before this function, and returns an
+;   array containing the grid warped to the projection.  This grid can
+;   be inserted into an image (data below) as follows:
+d5 3
+a7 1
+; map_set, lat, long, rot, /cyl, /noborder, /iso, _EXTRA=e
+d9 2
+a10 1
+; cgm_temp = mag_grid(mGridColor, magthick, xsize, ysize, oval, colorTable)
+d12 2
+a13 1
+; tv, map_image(data, xx, yy, /compress, _EXTRA=e), xx, yy
+d15 2
+a16 1
+; img = tvrd()
+d18 2
+a19 1
+; img[where(cgm_temp EQ mGridColor)] = mGridColor
+d21 5
+a25 1
+; set_plot, 'x'
+d27 2
+a28 1
+; tv, img
+d30 1
+d32 46
+d79 3
+d83 2
+a84 2
+function mag_grid, xysize=xysize, hires=hires, year=year, $
+                   magthick=magthick, oval=oval, kfactor=kfactor
+d86 4
+a89 1
+    mGridColor = 1
+d91 12
+a102 3
+    if(not keyword_set(magthick)) then begin
+        magthick = 1
+    endif
+d104 11
+a114 4
+    if(keyword_set(xysize)) then begin
+        xsize = xysize[0]
+        ysize = xysize[0]
+    endif
+d116 2
+a117 2
+    ; display setup
+    disp = !d.name
+d119 2
+a120 7
+    if(disp eq 'X') then begin
+        if(not keyword_set(xysize)) then begin
+            xsize = !d.x_size
+            ysize = !d.y_size
+        endif
+    endif else if(disp eq 'Z') then begin
+        saved_z =  tvrd()  ; store the current image in the z buffer
+d122 5
+a126 14
+        if(not keyword_set(xysize)) then begin
+            xsize = (size(saved_z,/dim))[0]
+            ysize = (size(saved_z,/dim))[1]
+        endif
+    endif else if(disp eq 'PS') then begin
+        if(not keyword_set(xysize)) then begin
+            ; convert from m^-5 to pixels
+            xsize = floor(float(!d.x_size) / 28.)
+            ysize = floor(float(!d.y_size) / 28.)
+        endif
+    endif
+                
+    ;;; set up the z buffer
+    set_plot,'z'                    
+d128 4
+a131 8
+    ; a scaling factor to get smoother lines
+    if(keyword_set(kfactor)) then begin
+        k = kfactor
+    endif else if(keyword_set(hires)) then begin
+        k = 20                
+    endif else begin
+        k = 5
+    endelse
+d133 25
+a157 15
+    device,set_resolution=[361*k,181*k]
+    erase
+
+    if(not keyword_set(year)) then begin
+        year = 1998
+    endif
+
+    load_cgm, mag, year=year, grid='mag'
+    mag = reform(temporary(mag), 65341, 6)
+                           
+    ; lat and lon separation
+    n = 10
+    m = 30
+                           
+    dummy = 999.99
+d159 22
+a180 17
+    glat = mag[*,0]
+    glon = mag[*,1]
+    mlat = mag[*,2]
+    mlon = mag[*,3]  
+    
+    ; set the parallels
+    for i=-90, 90, n do begin
+        index = where((mlat eq i)     and $
+                      (   i ne 0)     and $
+                      (glat lt dummy) and $
+                      (glon lt dummy), count)
+        if(count gt 0) then begin
+            lattemp = glat[index]
+            lontemp = glon[index]
+    
+            plots, fix(lontemp[0]*k), fix((lattemp[0]+90)*k), $
+                   color=mGridColor, /device, _EXTRA=e,thick=magthick*k
+d182 1
+a182 15
+            for j=1., count-1 do begin
+                           
+                if(keyword_set(oval) and (i eq -70 or $
+                                          i eq -60 or $
+                                          i eq  60 or $
+                                          i eq  70)) then begin
+                    thickness = oval*k
+                endif else begin
+                    thickness = magthick*k
+                endelse
+    
+                if(abs(lontemp[j] - lontemp[j-1]) gt 90) then begin
+    
+                    a = [fix(lontemp[j-1]*k), fix((lattemp[j-1]+90)*k)]
+                    d = [fix(lontemp[j]*k),   fix((lattemp[j]+90)*k)]
+d184 6
+a189 2
+                    c = [0,     (a[1]+d[1])/2]
+                    b = [361*k-1, (a[1]+d[1])/2]
+d191 9
+a199 15
+                    plots, [[a],[b]], $
+                           color=mGridColor, /device, _EXTRA=e, $
+                           thick=thickness
+                    plots, [[c],[d]], $
+                           color=mGridColor, /device, _EXTRA=e, $
+                           thick=thickness
+                   
+                endif else begin
+                    plots, fix(lontemp[j]*k), fix((lattemp[j]+90)*k), $
+                           /continue, color=mGridColor, /device,      $
+                           _EXTRA=e, thick=thickness   
+                endelse
+            endfor
+        endif
+    endfor
+d201 21
+a221 8
+    lat_toler = 5 ; tolerance to get around the poorly defined cgm equator
+    
+    ; set the meridians
+    for i=0, 361, m do begin
+        index = where((mlon eq i)                                    and $
+                      ((mlat gt lat_toler) or (mlat lt -lat_toler))  and $
+                      (glat lt dummy)                                and $
+                      (glon lt dummy), count) 
+d223 5
+a227 3
+        if(count gt 0) then begin
+            lattemp = glat[index]
+            lontemp = glon[index]
+d229 6
+a234 29
+            plots, fix(lontemp[0]*k), fix((lattemp[0]+90)*k), $
+                  color=mGridColor, /device, _EXTRA=e, thick=magthick*k
+                           
+            for j=1., count-1 do begin
+                if(abs(lontemp[j] - lontemp[j-1]) gt 90) then begin
+                    
+                    a = [fix(lontemp[j-1]*k), fix((lattemp[j-1]+90)*k)]
+                    d = [fix(lontemp[j]*k),   fix((lattemp[j]+90)*k)]
+                
+                    b = [0,     (a[1]+d[1])/2]
+                    c = [361*k-1, (a[1]+d[1])/2]
+    
+                    plots, [[a],[b]], $
+                           color=mGridColor, /device, _EXTRA=e, $
+                           thick=magthick*k
+                    plots, [[c],[d]], $
+                           color=mGridColor, /device, _EXTRA=e, $
+                           thick=magthick*k
+                endif else begin
+                    plots, fix(lontemp[j]*k), fix((lattemp[j]+90)*k), $   
+                           /continue, color=mGridColor, /device,      $   
+                           _EXTRA=e, thick=magthick*k
+                endelse
+            endfor
+       endif
+    endfor
+
+    cgm_temp = tvrd()
+    device, set_resolution=[xsize, ysize]
+d236 4
+a239 14
+    tv, map_image(cgm_temp, xx, yy, lonmin=0, lonmax=360, /compress), xx, yy
+    cgm_temp = tvrd()
+
+    ; display cleanup and restoration
+    set_plot, disp                
+
+    if(disp eq 'Z') then begin
+        device, set_resolution=[(size(saved_z,/dim))[0], $
+                                (size(saved_z,/dim))[1]]
+        tv, saved_z
+    endif
+                    
+return, cgm_temp
+end ; mag_grid
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d25 2
+a26 1
+function mag_grid, mgridcolor, magthick, xsize, ysize, oval, colorTable
+d28 12
+d41 20
+a60 12
+;    if ( disp eq 'Z' ) then begin
+;	beep & beep & beep
+;	print, " "
+;        print, "ERROR!"
+;	print, "Already in Z-buffer"
+;	print, "Using Z to build mag grid will destroy current image"
+;	print, "continuing anyways... hoping nothing currently in buffer..."
+;	print, " "
+;	print, "(waiting 5 seconds)"
+;	wait, 5
+;    endif
+ 
+d63 11
+a73 8
+    set_plot,'z'
+    ;loadct, 15, file=colorTable
+    snoect
+    device, set_resolution=[ xsize, ysize ]
+    erase, 255-mGridcolor
+                    
+                    
+    k = 20 ; a scaling factor to get smoother lines
+d75 8
+a82 3
+    erase, 255-mGridcolor
+    load_cgm, mag98, year=1998, grid='mag'
+    mag98 = reform(temporary(mag98), 65341, 6)
+d90 4
+a93 4
+    glat = mag98[*,0]
+    glon = mag98[*,1]
+    mlat = mag98[*,2]
+    mlon = mag98[*,3]  
+a143 1
+                
+d185 2
+a186 4
+    erase, 255-mGridColor  
+;    map_set, lat, long, rot, /ortho, /noborder, /iso, _EXTRA=e ; these seem not needed
+;    map_set, lat, long, rot, /cyl,   /noborder, /iso, _EXTRA=e
+    tv, map_image( cgm_temp, xx, yy, lonmin=0, lonmax=360, /compress ), xx, yy
+a187 1
+                    
+d189 1
+d191 6
+@
