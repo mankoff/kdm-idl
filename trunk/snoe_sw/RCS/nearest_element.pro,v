@@ -1,0 +1,256 @@
+head	1.5;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.5
+date	2002.09.25.23.22.19;	author mankoff;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2002.09.14.22.32.11;	author mankoff;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2002.08.18.01.59.59;	author mankoff;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2002.08.16.18.44.24;	author mankoff;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.08.01.03.35.52;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.5
+log
+@fixed NAME: comment header
+@
+text
+@; $Id: nearest_element.pro,v 1.4 2002/09/14 22:32:11 mankoff Exp mankoff $
+;
+; $Author: mankoff $
+; $Date: 2002/09/14 22:32:11 $
+; $Revision: 1.4 $
+;
+;+
+; NAME:
+;    NEAREST_ELEMENT.PRO
+;
+; PURPOSE: 
+;    This function return the nearest element in a LIST to a provided VALUE
+;
+; WARNING/NOTE:
+;    Look at the IDL provided procedure VALUE_LOCATE, as it performs
+;    a similar function, and works with arrays, and is MUCH
+;    faster. However, it uses interpolation, so it provides the wrong
+;    answer sometimes, depending on the type of array passed to it
+;    IDL> a = [ 0, 1, 1.1, 1.2, 10, 11, 12 ]
+;    IDL> print, value_locate( a, 1.16 )      ; WRONG
+;    IDL> print, vaule_locate( a, 9.00 )      ; WRONG
+;    
+;    The input array must be fairly linear for VALUE_LOCATE to
+;    work. If it is not, or has data gaps, use this procedure  
+;    (NEAREST_ELEMENT)
+;
+; CATEGORY: 
+;    Vector
+;
+; CALLING SEQUENCE: 
+;    result = NEAREST_ELEMENTS( value, list, position )
+;
+; INPUTS:
+;    value: This is a scalar value.
+;    list:  This is a vector of any type but 'string'
+;
+; OUTPUTS: This function returns the element from list that is
+;     closest to value
+;
+; OPTIONAL OUTPUTS: The position into list of the nearest value
+;     can optionally be returned
+;
+; SIDE EFFECTS: hopefully none
+;
+; RESTRICTIONS: 
+;     value cannot be an array
+;     list must be sequentially increasing
+;
+; PROCEDURE: Perform a min(where()) and a max(where()). If multiple
+;     entries in das_list are equally close, the first entry is returned.
+;
+; EXAMPLE:
+;     val = 42
+;     list = [ 40, 41, 44, 48 ] ; list = list[sort(list)]
+;     print, nearest_element( val, list, p ), p
+;        41    1
+;
+; MODIFICATION HISTORY:
+;    KDM; 2002-04-09; wrote procedure
+;    KDM; 2002-05-16; documented
+;    KDM; 2002-07-31; Changed name and code from Mariner 9 DAS
+;        specific to vector general
+;    KDM; 2002-08-16; Removed all but 1 where() statement for speed
+;
+;-
+
+
+FUNCTION nearest_element, val, list, position
+
+;;; the code does this, but faster
+;return, list[ min( abs(list-val), position )  ]
+
+ n = n_elements( list ) - 1
+
+ p = ( where( list GE val, count ) )[0]
+ IF ( count EQ 0 ) THEN IF ( val GT max( list ) ) THEN p=n ELSE p=0
+ top = list[ p ]
+ bot = list[ p-1 >0 ]
+
+ dif = abs( val - [ bot, top ] )
+ IF ( dif[0] LE dif[1] ) THEN BEGIN
+     ;;; lower value is closest
+     position = p-1>0
+     return, bot
+ ENDIF ELSE BEGIN
+     position = p
+     return, top
+ ENDELSE
+
+ MESSAGE, "Error: should not be here...", /CONT
+ return, -1
+ END
+
+;
+; $Log: nearest_element.pro,v $
+; Revision 1.4  2002/09/14 22:32:11  mankoff
+; Added comments/warnings re value_locate
+;
+; Revision 1.3  2002/08/18 01:59:59  mankoff
+; added RCS vars
+;
+@
+
+
+1.4
+log
+@Added comments/warnings re value_locate
+@
+text
+@d1 1
+a1 1
+; $Id: nearest_element.pro,v 1.3 2002/08/18 01:59:59 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Date: 2002/08/18 01:59:59 $
+; $Revision: 1.3 $
+d8 2
+a9 1
+; NAME: NEAREST_ELEMENT.PRO
+d96 3
+@
+
+
+1.3
+log
+@added RCS vars
+@
+text
+@d1 1
+a1 1
+; $Id$
+d3 3
+a5 3
+; $Author$
+; $Date$
+; $Revision$
+d10 2
+a11 2
+; PURPOSE: This function return the nearest element in a LIST to a
+;     provided VALUE
+d13 12
+a24 1
+; CATEGORY: Vector
+d26 5
+a30 1
+; CALLING SEQUENCE: result = NEAREST_ELEMENTS( value, list, position )
+d69 2
+a70 1
+n = n_elements( list ) - 1
+d72 1
+a72 18
+p = ( where( list GE val, count ) )[0]
+IF ( count EQ 0 ) THEN IF ( val GT max( list ) ) THEN p=n ELSE p=0
+top = list[ p ]
+bot = list[ p-1 >0 ]
+
+dif = abs( val - [ bot, top ] )
+IF ( dif[0] LE dif[1] ) THEN BEGIN
+    ;;; lower value is closest
+    position = p-1>0
+    return, bot
+ENDIF ELSE BEGIN
+    position = p
+    return, top
+ENDELSE
+
+MESSAGE, "Error: should not be here...", /CONT
+return, -1
+END
+d74 23
+a96 2
+;
+; $Log$
+@
+
+
+1.2
+log
+@removed where() statements for speed improvement.
+Fixed bug when VAL was LT min(list)
+@
+text
+@d1 6
+d74 4
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d41 1
+d48 1
+a48 6
+;;; maybe it is an exact match?
+exact = where( val EQ list, n )
+IF ( n NE 0 ) THEN BEGIN
+    position = exact[0]
+    return, list[ exact[0] ]
+ENDIF
+d50 4
+a53 4
+;;; ELSE, val is not in list, and we need to do some math to find its
+;;; nearest neighbor value.
+top = (list[ min( where( list GT val ) ) ])
+bot = (list[ max( where( list LT val ) ) ])
+d58 1
+a58 1
+    position = max( where( list LT val ) )
+d61 1
+a61 1
+    position = min( where( list GT val ) )
+@

@@ -1,0 +1,59 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2002.09.14.21.49.21;	author mankoff;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.07.29.23.17.59;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@added full path to convert so write_gif can be used in cron
+@
+text
+@PRO write_gif, name, data, r, g, b
+
+tvlct, r, g, b, /get
+unique_name = strtrim( long( systime( 1 ) ), 2 ) + '.bmp'
+write_bmp, unique_name, data, r, g, b
+
+cmd = '/usr/X11R6/bin/convert ' + unique_name + ' ' + name
+spawn, cmd, /sh
+
+cmd = '/bin/rm ' + unique_name
+spawn, cmd, /sh
+
+;;; to read gifs:
+; convert img.gif img.bmp
+; read_bmp, img.bmp
+; delete img.bmp
+; return image
+
+END
+
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d7 1
+a7 1
+cmd = 'convert ' + unique_name + ' ' + name
+@

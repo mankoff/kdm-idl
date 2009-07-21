@@ -1,0 +1,767 @@
+head	1.12;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.12
+date	2002.09.13.18.56.04;	author mankoff;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2002.09.10.07.09.50;	author mankoff;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2002.09.01.22.28.27;	author mankoff;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2002.08.29.23.21.21;	author mankoff;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2002.08.29.20.27.53;	author mankoff;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2002.08.29.18.19.30;	author mankoff;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2002.08.29.17.59.18;	author mankoff;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2002.08.28.03.19.45;	author mankoff;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2002.08.01.23.34.28;	author mankoff;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2002.07.26.17.26.48;	author mankoff;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2002.07.26.04.35.27;	author mankoff;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.07.26.02.36.28;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.12
+log
+@fixed PS printout of date bug
+@
+text
+@; $Id: l4_lat_alt_day.pro,v 1.11 2002/09/10 07:09:50 mankoff Exp mankoff $
+;
+; $Author: mankoff $
+; $Revision: 1.11 $
+; $Date: 2002/09/10 07:09:50 $
+;
+
+PRO L4_lat_alt_day, coords, yyyyddd, yyyyddd1, manual=manual, $
+                    ch=ch, ps=ps, log=log, $
+                    _EXTRA=e
+
+;+
+; NAME:
+;	L4_LAT_ALT_DAY
+;
+; PURPOSE:
+;   This routine displays one day of L4 data at a time. A movie can be
+;   generated (manual or passive mode), or a single day, or a PS file.
+;
+; CATEGORY:
+;   SNOE, image, movie
+;
+; CALLING SEQUENCE:
+;   L4_LAT_ALT_DAY, Coord, YYYYDDD [YYYYDDD1]
+;
+; INPUTS:
+;   COORD: The coordinate system of the data, either 'geo' or 'mag'
+;   YYYYDDD: The day to display.
+;
+; OPTIONAL INPUTS:
+;   YYYYDDD1: The last day to display in a MOVIE sequence
+;	
+; KEYWORD PARAMETERS:
+;   MANUAL: Set this to control the movie manually
+;           ,: prev day (<)
+;           q: Quit movie
+;           j: Jump to day
+;           l: Toggle LOG mode
+;           any other key: next day
+;   PS: Set this keyword to produce a POSTSCRIPT image
+;   CH: Set this to the desired channel to view [ 2 ]
+;   LOG: Set this to view the data on a Logarithmic scale
+;
+;   EXTRA=e is used for:
+;       L4_LAT_ALT_DISP (lv, sv, mask, log, subtitle, interp, xtitle, etc.)
+;       IMDISP: (INTERP, OUT_POS, etc. )
+;       DEVICE: (FILENAME, BITS_PER_PIXEL, PORTRAIT, LANDSCAPE, etc. )
+;       others...
+;
+; OUTPUTS:
+;   An image, or a PS file
+;
+; SIDE EFFECTS:
+;   Uses the PS device if /PS set. Uses the current WINDOW
+;
+; RESTRICTIONS:
+;   Must be in a L4-type directory (needs NO_?_day_???.dat)
+;
+; PROCEDURE:
+;   This routine just opens files and handles the movie part
+;   (i.e. moving through the file in a loop or based upon your
+;   keystrokes). The display program is called each time through the
+;   loop, with all necessary variables and keywords (and _EXTRA=e)
+;   passed in.
+;
+; EXAMPLE:
+;   To generate an image:
+;   L4_lat_alt_day, 'geo', 1998079
+;   L4_lat_alt_day, 'mag', 2002150, /LOG, /PS, /INTERP, FILENAME='foo.ps'
+;
+;   To watch a movie:
+;   L4_lat_alt_day, 'geo', 1998079, 1999079, /LOG
+;   
+;   To step through:
+;   L4_lat_alt_day, 'geo', 1998079, /MANUAL, /INTERP
+;
+; MODIFICATION HISTORY:
+;   Written by: KDM; 2002-07-25
+;   2002-07-26: KDM; Added TOGGLE LOG mode
+;   2002-08-27; KDM; Improved AXIS accuracies
+;   2002-08-29; KDM; cm-3 should be cm^3
+;   2002-08-29; KDM; Now uses generic L4_LAT_ALT_DISP subroutine for
+;                    graphics. Uses FILE_UNIQ() 
+;   2002-09-01; KDM; /swap_if_big_endian
+;   2002-09-09; KDM; added _EXTRA=e to OPEN (can now be used with BIG ENDIAN)
+;-
+
+IF ( N_PARAMS() LT 2 ) THEN BEGIN
+    MESSAGE, "Usage: L4_LAT_ALT_DAY, COORDS, YYYYDDD", /CONT
+    MESSAGE, "Use DOC_LIBRARY for help"
+    RETURN
+END
+
+ERASE
+IF ( NOT KEYWORD_SET( ch ) ) THEN ch = 2
+file = STRCOMPRESS('NO_' + STRING(ch) + '_day_' + coords + '.dat', /REMOVE_ALL)
+IF ( coords EQ 'geo' ) THEN xtitle = 'Geographic ' ELSE xtitle = 'Geomagnetic '
+xtitle = xtitle + 'Latitude'
+
+dom = SNOE_DATE( yyyyddd, /from_yyyyddd, /to_dom )
+IF ( KEYWORD_SET( manual ) OR KEYWORD_SET( yyyyddd1 ) ) THEN BEGIN
+    IF ( KEYWORD_SET( yyyyddd1 ) ) THEN $
+      dom1 = SNOE_DATE( yyyyddd1, /from_yyyyddd, /to_dom )
+    IF ( KEYWORD_SET( manual ) ) THEN dom1 = !SNOE.d.now_dom
+ENDIF ELSE dom1 = dom
+
+OPENR, lun, file, /SWAP_IF_BIG_ENDIAN, /GET_LUN, _EXTRA=e
+datafile = ASSOC( lun, !SNOE.f.l4 )
+
+charsize = 1.5
+charthick = 2
+IF ( KEYWORD_SET( ps ) ) THEN BEGIN
+    disp = !d.name
+    SET_PLOT, 'ps'
+    DEVICE, /COLOR, BITS=8, FILENAME=file_uniq()+'.ps', _EXTRA=e
+    charthick = 4
+    charsize = 1.5
+ENDIF
+
+today = dom ;;; will increment through movie
+WHILE (1) DO BEGIN
+    
+    data = datafile[ today ] & data = data[ 0:36, 0:27 ]
+
+    ;;; THIS IS THE PROGRAM THAT DOES ALL THE DISPLAY WORK
+    L4_LAT_ALT_DISP, data, $
+      xtitle=xtitle, $
+      subtitle=STRTRIM( SNOE_DATE( today, /from_dom, /to_yyyyddd), 2 ), $
+      log=log, $
+      charsize=charsize, $
+      charthick=charthick, $
+      _EXTRA=e
+    
+    IF ( KEYWORD_SET( manual ) ) THEN BEGIN
+        k = GET_KBRD( 1 )
+        IF ( k EQ string(10b) ) THEN k = 'n' ; enter
+        CASE k OF
+            ',': today = today-1
+            'q': GOTO, done
+            'j': BEGIN
+                READ, jump, PROMPT='New YYYYDDD: '
+                today = SNOE_DATE( jump, /from_yyyyddd, /to_dom )
+            END
+            'l': BEGIN ;;; TOGGLE LOG
+                log = NOT KEYWORD_SET( log )+2 ;;; TOGGLE log
+                ERASE
+            END
+            ELSE: today = today + 1
+        ENDCASE
+    ENDIF ELSE today = today + 1 ; if NOT manual then auto-update
+    
+    ;;; allow generation of postscript movies
+    IF ( keyword_set( ps ) ) THEN BEGIN
+        erase
+        print, snoe_date( today-1, /from_dom, /to_yyyyddd )
+    ENDIF
+    IF ( today GT dom1 ) THEN GOTO, done
+ENDWHILE
+done:
+
+IF ( KEYWORD_SET( ps ) ) THEN BEGIN
+    DEVICE, /CLOSE
+    SET_PLOT, disp
+ENDIF
+
+FREE_LUN, lun
+END
+
+;
+; $Log: l4_lat_alt_day.pro,v $
+; Revision 1.11  2002/09/10 07:09:50  mankoff
+; added _EXTRA=e to OPEN (can now be used with BIG ENDIAN)
+;
+; Revision 1.10  2002/09/01 22:28:27  mankoff
+; /swap_if_big_endian
+;
+; Revision 1.9  2002/08/29 23:21:21  mankoff
+; uses FILE_UNIQ() for PS output
+;
+; Revision 1.8  2002/08/29 20:27:53  mankoff
+; Now uses generic L4 display program L4_LAT_ALT_DISP
+;
+; Revision 1.7  2002/08/29 18:19:30  mankoff
+; foo>1 * 1e8 is now correctly (foo>1)*1e8
+;
+; Revision 1.6  2002/08/29 17:59:18  mankoff
+; title was wrong: molecules/cm-3 should be molecules/cm^3
+;
+; Revision 1.5  2002/08/28 03:19:45  mankoff
+; AXIS now correct to the pixel. Changed log title when toggling log/linear
+;
+; Revision 1.4  2002/08/01 23:34:28  mankoff
+; changed titles for LOG / LINEAR
+;
+; Revision 1.3  2002/07/26 17:26:48  mankoff
+; Fixed bug in movie mode (infinite loop unless /MANUAL set)
+; Added toggle-log (L) in movie mode
+;
+; Revision 1.2  2002/07/26 04:35:27  mankoff
+; added movie capabilities
+;
+; Revision 1.1  2002/07/26 02:36:28  mankoff
+; Initial revision
+;
+
+@
+
+
+1.11
+log
+@added _EXTRA=e to OPEN (can now be used with BIG ENDIAN)
+@
+text
+@d1 1
+a1 1
+; $Id: l4_lat_alt_day.pro,v 1.10 2002/09/01 22:28:27 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.10 $
+; $Date: 2002/09/01 22:28:27 $
+d155 1
+a155 1
+        print, snoe_date( today, /from_dom, /to_yyyyddd )
+d171 3
+@
+
+
+1.10
+log
+@/swap_if_big_endian
+@
+text
+@d1 1
+a1 1
+; $Id: l4_lat_alt_day.pro,v 1.9 2002/08/29 23:21:21 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.9 $
+; $Date: 2002/08/29 23:21:21 $
+d85 1
+d107 1
+a107 1
+OPENR, lun, file, /SWAP_IF_BIG_ENDIAN, /GET_LUN
+d171 3
+@
+
+
+1.9
+log
+@uses FILE_UNIQ() for PS output
+@
+text
+@d1 1
+a1 1
+; $Id: l4_lat_alt_day.pro,v 1.8 2002/08/29 20:27:53 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.8 $
+; $Date: 2002/08/29 20:27:53 $
+d78 7
+a84 6
+; 	Written by: KDM; 2002-07-25
+;	2002-07-26: KDM; Added TOGGLE LOG mode
+;       2002-08-27; KDM; Improved AXIS accuracies
+;       2002-08-29; KDM; cm-3 should be cm^3
+;       2002-08-29; KDM; Now uses generic L4_LAT_ALT_DISP subroutine
+;                        for graphics. Uses FILE_UNIQ()
+d106 1
+a106 1
+OPENR, lun, file, /SWAP_ENDIAN, /GET_LUN
+d170 3
+@
+
+
+1.8
+log
+@Now uses generic L4 display program L4_LAT_ALT_DISP
+@
+text
+@d1 1
+a1 1
+; $Id: l4_lat_alt_day.pro,v 1.7 2002/08/29 18:19:30 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.7 $
+; $Date: 2002/08/29 18:19:30 $
+d83 1
+a83 1
+;                        for graphics
+d113 1
+a113 1
+    DEVICE, /COLOR, BITS=8, _EXTRA=e
+d169 3
+@
+
+
+1.7
+log
+@foo>1 * 1e8 is now correctly (foo>1)*1e8
+@
+text
+@d1 1
+a1 1
+; $Id: l4_lat_alt_day.pro,v 1.6 2002/08/29 17:59:18 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.6 $
+; $Date: 2002/08/29 17:59:18 $
+d9 1
+a9 2
+                    lv=lv, sv=sv, ps=ps, ch=ch, $
+                    log=log, mask=mask, $
+d18 1
+a18 1
+;   generated, or a single day, or a PS file.
+a39 2
+;   LV: The large value of the data [ !SNOE.f.l4_lv ]
+;   SV: The small value of the data [ lv / 20. ] used with /LOG only
+d42 1
+a42 2
+;   LOG: Set this if the log of the data should be imaged
+;   MASK: Set this to mask out part of the data (PMCs)
+d45 1
+d59 7
+d75 1
+a75 1
+;   L4_lat_alt_day, 'geo', 1998079, /MANUAL
+d82 2
+a97 2
+IF ( NOT KEYWORD_SET( lv ) ) THEN lv = !SNOE.f.l4_lv
+IF ( NOT KEYWORD_SET( sv ) ) THEN sv = lv / 20.
+d108 2
+d114 3
+a116 25
+    ss = 4
+ENDIF ELSE ss = 2
+charsize = 1.5
+charthick = ss & pth = ss & xth = ss & yth = ss
+
+alt_lo = !SNOE.f.l4_alt[ 27 ]
+alt_hi = !SNOE.f.l4_alt[ 0 ]
+
+;;; IMAGE and CBAR positions
+ipos=[ 0.18, 0.20, 0.90, 0.85 ]
+cpos=[ 0.18+0.10, 0.77, 0.90-0.10, 0.79 ]
+
+;;; CBAR labels
+;;;
+;;; NOTE: cut-and-paste this section into the "TOGGLE LOG" section
+;;; below if any changes are made
+;;;
+IF ( KEYWORD_SET( log ) ) THEN BEGIN
+    xtickv = [3e7,6e7,1e8,3e8,6e8] / 1e7 & xtickn = [' 3',' 6','10','30','60']
+ENDIF ELSE BEGIN ;;; LINEAR
+    xtickv = MAKEX( CEIL(  sv/1.0e8 ) * 1e8, (FLOOR( lv/1.0e8 )>1) * 1e8, 1e8 )
+    xtickn = STRTRIM( FIX(xtickv / 1e7), 2 )
+ENDELSE
+title = 'Nitric Oxide Density!c(x10!u7!n molecules / cm!u3!n)'
+IF ( keyword_set( log ) ) THEN title = 'Log ' + title
+a121 8
+    data[ *, 0:3 ] = 0 ;;; zero out top 3 columns
+    data[ *, [25,26,27] ] = 0 ;;; zero out bot 3 columns
+    IF ( KEYWORD_SET( mask ) ) THEN BEGIN
+        ;    data[ [0,1,35,36], * ] = 0
+        ;    data[ [1,35], 26 ] = 0
+        ;    data[ [1,2,34,35], 27 ] = 0
+        MESSAGE, "MASK not yet implemented", /CONT
+    ENDIF
+d123 7
+a129 21
+    IF ( KEYWORD_SET( log ) ) THEN BEGIN
+        data = (ALOG10( (data/ (sv) )>1) )
+        data = (255./ALOG10( lv/sv )) * data
+    ENDIF ELSE data = ( data * 254 / lv) > 0 ;;; LINEAR
+
+    ;;; CREATE IMAGE
+    ;help, data
+    ;data = indgen( 37, 28 )
+    imdisp, data, ERASE=0, $
+      /ORDER, /NOSCALE, $
+      /AXIS, $
+      xrange=[-92.5,92.5], xticks=6, xstyle=1, xminor=3, xticklen=-0.02, $
+      xtickv=makex(-90,90,30),xtickn=strtrim(fix(makex(-90,90,30)),2), $
+      yrange=[alt_lo-(5/3.),alt_hi+(5/3.)], $
+      yticks=4, ystyle=1, yminor=2, yticklen=-0.02, $
+      ytickv=makex(alt_lo,alt_hi,20),$
+      ytickn=strtrim(fix(makex(alt_lo,alt_hi,20)),2), $
+      title=title, ytitle='Altitude (km)', xtitle=xtitle, $
+      charsize=charsize, charthick=charthick, $
+      thick=pth, xthick=xth, ythick=yth, $
+      POSITION=ipos, /USE, $
+a131 13
+    ;;; CBAR
+    CBAR, /HORIZONTAL, /TOP, XLOG=KEYWORD_SET( log ), $
+      /XST, XRANGE=[ sv,lv ]/1.0e7, $
+      xtickv=xtickv, xtickn=xtickn, xticks=n_elements(xtickv)-1, $
+      POSITION=cpos, color=!SNOE.ct.fg, $
+      CHARSIZE=charsize, $
+      charth=charthick
+    
+    ;;; YYYYDDD title
+    XYOUTS, 0, 153.5, STRTRIM( SNOE_DATE(today,/from_dom,/to_yyyyddd), 2), $
+      alignment=.5, charsize=charsize, charth=charthick, $
+      COLOR=!SNOE.ct.fg
+
+a144 12
+                IF ( KEYWORD_SET( log ) ) THEN BEGIN
+                    xtickv = [3e7,6e7,1e8,3e8,6e8] / 1e7
+                    xtickn = [' 3',' 6','10','30','60']
+                    title = 'Log Nitric Oxide Density!c' + $
+                      '(x10!u7!n molecules / cm!u3!n)'
+                ENDIF ELSE BEGIN ;;; LINEAR
+                    xtickv = MAKEX( CEIL(  sv/1.0e8 ) * 1e8, $
+                                    (FLOOR( lv/1.0e8 )>1) * 1e8, 1e8 )
+                    xtickn = STRTRIM( FIX(xtickv / 1e7), 2 )
+                    title = 'Nitric Oxide Density!c' + $
+                      '(x10!u7!n molecules / cm!u3!n)'
+                ENDELSE
+d149 1
+a149 1
+
+d169 3
+@
+
+
+1.6
+log
+@title was wrong: molecules/cm-3 should be molecules/cm^3
+@
+text
+@d1 1
+a1 1
+; $Id: l4_lat_alt_day.pro,v 1.5 2002/08/28 03:19:45 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.5 $
+; $Date: 2002/08/28 03:19:45 $
+d128 1
+a128 1
+    xtickv = MAKEX( CEIL(  sv/1.0e8 ) * 1e8, FLOOR( lv/1.0e8 )>1 * 1e8, 1e8 )
+d203 1
+a203 1
+                                    FLOOR( lv/1.0e8 )>1 * 1e8, 1e8 )
+d232 3
+@
+
+
+1.5
+log
+@AXIS now correct to the pixel. Changed log title when toggling log/linear
+@
+text
+@d1 1
+a1 1
+; $Id: l4_lat_alt_day.pro,v 1.4 2002/08/01 23:34:28 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.4 $
+; $Date: 2002/08/01 23:34:28 $
+d77 1
+d131 1
+a131 1
+title = 'Nitric Oxide Density!c(x10!u7!n molecules / cm!u-3!n)'
+d200 1
+a200 1
+                      '(x10!u7!n molecules / cm!u-3!n)'
+d206 1
+a206 1
+                      '(x10!u7!n molecules / cm!u-3!n)'
+d232 3
+@
+
+
+1.4
+log
+@changed titles for LOG / LINEAR
+@
+text
+@d1 1
+a1 1
+; $Id: l4_lat_alt_day.pro,v 1.3 2002/07/26 17:26:48 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.3 $
+; $Date: 2002/07/26 17:26:48 $
+d74 1
+a74 1
+; 	Written by:	KDM; 2002-07-25
+d76 1
+a76 1
+;
+d112 3
+d131 1
+d152 2
+d157 6
+a162 2
+      xrange=[-90,90], xticks=6, xstyle=1, xminor=3, xticklen=-0.02, $
+      yrange=[80,180], yticks=5, ystile=1, yminor=2, yticklen=-0.02, $
+d178 1
+a178 1
+    XYOUTS, 0, 160.5, STRTRIM( SNOE_DATE(today,/from_dom,/to_yyyyddd), 2), $
+d198 2
+a199 1
+                    title = 'Log Nitric Oxide Density (10!u7!n cm!u-3!n)'
+d204 2
+a205 1
+                    title = 'Nitric Oxide Density (10!u7!n cm!u-3!n)'
+d231 3
+@
+
+
+1.3
+log
+@Fixed bug in movie mode (infinite loop unless /MANUAL set)
+Added toggle-log (L) in movie mode
+@
+text
+@d1 1
+a1 1
+; $Id: l4_lat_alt_day.pro,v 1.2 2002/07/26 04:35:27 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.2 $
+; $Date: 2002/07/26 04:35:27 $
+d57 1
+a57 1
+;   Uses the PS device
+d75 1
+a75 2
+;	2002-03-30: XYZ Made a change. Remember to change the stuff above 
+;			if you add a new keyword or something!
+d79 3
+a81 3
+IF ( N_PARAMS() EQ 0 ) THEN BEGIN
+    DOC_LIBRARY, 'L4_lat_alt_day'
+    MESSAGE, "Must provide COORDS and YYYYDDD", /CONT
+d85 1
+a122 1
+    title = 'Log Nitric Oxide Density (10!u7!n cm!u-3!n)'
+a125 1
+    title = 'Nitric Oxide Density (10!u7!n cm!u-3!n)'
+d127 1
+d219 4
+@
+
+
+1.2
+log
+@added movie capabilities
+@
+text
+@d1 1
+a1 1
+; $Id: l4_lat_alt_day.pro,v 1.1 2002/07/26 02:36:28 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.1 $
+; $Date: 2002/07/26 02:36:28 $
+d39 1
+d96 2
+a97 2
+         dom1 = SNOE_DATE( yyyyddd1, /from_yyyyddd, /to_dom ) ELSE $
+         dom1 = SNOE_DATE( /from_today, /to_dom )
+a98 1
+;IF ( KEYWORD_SET( manual ) AND NOT KEYWORD_SET( yyyyddd1 ) ) THEN $
+d117 4
+d122 2
+a123 2
+    xtickv = [3e7,6e7,1e8,3e8,6e8] / 1e7
+    xtickn = [' 3',' 6','10','30','60']
+d125 1
+a125 4
+    xtickv = MAKEX( CEIL(  sv/1.0e8 ) * 1e8, $
+                    FLOOR( lv/1.0e8 )>1 * 1e8, $
+                    1e8 )
+    IF ( n_elements( xtickv ) GT 50 ) THEN xtickv=0
+d127 1
+d154 1
+a154 2
+      title='Nitric Oxide Density (10!u7!n cm!u-3!n)', $
+      ytitle='Altitude (km)', xtitle=xtitle, $
+d175 1
+d183 14
+d206 1
+a206 1
+
+d220 3
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+; $Id$
+d3 3
+a5 3
+; $Author$
+; $Revision$
+; $Date$
+d8 1
+a8 1
+PRO L4_lat_alt_day, coords, yyyyddd, $
+d18 2
+a19 1
+;   This routine displays one day of L4 data. 
+d22 1
+a22 1
+;   SNOE, image
+d25 1
+a25 1
+;   L4_LAT_ALT_DAY, Coord, YYYYDDD
+d30 3
+d35 5
+d62 1
+d64 7
+a70 1
+;   L4_lat_alt_day, 'mag', 2000366, /LOG, /PS, /INTERP, FILENAME='foo.ps'
+d85 1
+a85 3
+IF (NOT KEYWORD_SET(lv)) THEN lv = !SNOE.f.l4_lv
+IF (NOT KEYWORD_SET(sv)) THEN sv = lv / 20.
+IF (NOT KEYWORD_SET(ch)) THEN ch = 2
+a86 1
+
+d90 2
+a91 2
+OPENR, lun, file, /SWAP_ENDIAN, /GET_LUN
+data = ASSOC( lun, !SNOE.f.l4 )
+d93 6
+d100 2
+a101 20
+data = data[ dom ] & data = data[ 0:36, 0:27 ]
+data[ *, 0:3 ] = 0 ;;; zero out top 3 columns
+data[ *, [25,26,27] ] = 0 ;;; zero out bot 3 columns
+FREE_LUN, lun
+IF ( KEYWORD_SET( mask ) ) THEN BEGIN
+;    data[ [0,1,35,36], * ] = 0
+;    data[ [1,35], 26 ] = 0
+;    data[ [1,2,34,35], 27 ] = 0
+    MESSAGE, "MASK not yet implemented", /CONT
+ENDIF
+
+IF ( KEYWORD_SET( log ) ) THEN BEGIN
+    data = (ALOG10( (data/ (sv) )>1) )
+    data = (255./ALOG10( lv/sv )) * data
+ENDIF ELSE data = ( data * 254 / lv) > 0 ;;; LINEAR
+
+;;; SIZE
+IF ( KEYWORD_SET( ps ) ) THEN ss = 4 ELSE ss = 2
+charsize = 1.5
+charthick = ss & pth = ss & xth = ss & yth = ss
+d107 4
+a110 1
+ENDIF
+a115 12
+;;; CREATE IMAGE
+imdisp, data, /ERASE, $
+  /ORDER, /NOSCALE, $
+  /AXIS, $
+  xrange=[-90,90], xticks=6, xstyle=1, xminor=3, xticklen=-0.02, $
+  yrange=[80,180], yticks=5, ystile=1, yminor=2, yticklen=-0.02, $
+  title='Nitric Oxide Density (10!u7!n cm!u-3!n)', $
+  ytitle='Altitude (km)', xtitle=xtitle, $
+  charsize=charsize, charthick=charthick, thick=pth, xthick=xth, ythick=yth, $
+  POSITION=ipos, /USE, $
+  _EXTRA=e
+
+d128 65
+a192 12
+;;; CBAR
+CBAR, /HORIZONTAL, /TOP, XLOG=KEYWORD_SET( log ), $
+  /XST, XRANGE=[ sv,lv ]/1.0e7, $
+  xtickv=xtickv, xtickn=xtickn, xticks=n_elements(xtickv)-1, $
+  POSITION=cpos, color=!SNOE.ct.fg, $
+  CHARSIZE=charsize, $
+  charth=charthick
+
+;;; YYYYDDD title
+XYOUTS, 0, 160.5, STRTRIM( LONG( yyyyddd ), 2 ), alignment=.5, $
+  charsize=charsize, charth=charthick, $
+  COLOR=!SNOE.ct.fg
+d199 1
+d203 3
+a205 1
+; $Log$
+@

@@ -1,0 +1,204 @@
+head	1.5;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.5
+date	2002.08.27.00.39.31;	author mankoff;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2002.08.26.02.16.12;	author mankoff;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2002.08.19.22.33.01;	author mankoff;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2002.07.31.19.49.34;	author mankoff;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.07.29.18.07.13;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.5
+log
+@fixed bug with tvlct call
+@
+text
+@; $Id: plotg.pro,v 1.4 2002/08/26 02:16:12 mankoff Exp mankoff $
+;
+; $Author: mankoff $
+; $Revision: 1.4 $
+; $Date: 2002/08/26 02:16:12 $
+;
+
+PRO plotg, xx_in, yy_in, _EXTRA=e
+
+;+
+; NAME:
+;	PLOTG
+;
+; PURPOSE:
+;   This procedure is a wrapper for the IDL plot command, that puts a
+;   light gray grid behind the plot. It makes the plots much easier to
+;   read :)
+;
+; CATEGORY:
+;   SNOE, plot
+;
+; PROCEDURE:
+;   See PLOT and SNOECT for any and all documentation
+;
+; EXAMPLE:
+;   PLOTG, indgen( 11 )
+;   PLOTG, indgen(11), title='Foo', GVAL=10
+;
+; MODIFICATION HISTORY:
+; 	Written by: KDM; 2002-07-28
+;       2002-08-25; KDM; grid is now 'light' even for PS
+;
+;-
+
+xx = xx_in
+IF ( n_elements( yy_in ) EQ 0 ) THEN BEGIN
+    yy = xx
+    xx = indgen( n_elements( xx ) )
+ENDIF ELSE yy = yy_in
+
+snoect, /gray, _EXTRA=e
+IF ( !d.name EQ 'PS' ) THEN BEGIN
+    ;;; the gray value defaults to a low number for X-windows, where
+    ;;; 0->255 is black->white. But on PS the background is reversed,
+    ;;; so you want a mostly white background grid, not mostly black.
+    tvlct, r,g,b, /GET
+    snoect, /gray, gval=255-r[254], _EXTRA=e
+ENDIF
+
+;;; plot the background grid in gray.
+plot, xx, yy, /NODATA, color=254, $
+  xticklen=1, yticklen=1, yminor=1, xminor=1, _EXTRA=e
+
+;;; re-plot the frame, ticks, and titles in the foreground color
+plot, xx, yy, /NODATA, /NOERASE, _EXTRA=e
+;;; plot the data
+oplot, xx, yy, _EXTRA=e
+
+END
+
+;
+; $Log: plotg.pro,v $
+; Revision 1.4  2002/08/26 02:16:12  mankoff
+; fixed so grid is light-colored even in PS when there is a different background
+;
+; Revision 1.3  2002/08/19 22:33:01  mankoff
+; didn't work when both X and Y were passed in.
+;
+; Revision 1.2  2002/07/31 19:49:34  mankoff
+; fixed x/y bug
+;
+; Revision 1.1  2002/07/29 18:07:13  mankoff
+; Initial revision
+;
+;
+;
+@
+
+
+1.4
+log
+@fixed so grid is light-colored even in PS when there is a different background
+@
+text
+@d1 1
+a1 1
+; $Id: plotg.pro,v 1.3 2002/08/19 22:33:01 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.3 $
+; $Date: 2002/08/19 22:33:01 $
+d46 1
+a46 1
+    tvlct, r, /GET
+d63 3
+@
+
+
+1.3
+log
+@didn't work when both X and Y were passed in.
+@
+text
+@d1 1
+a1 1
+; $Id: plotg.pro,v 1.2 2002/07/31 19:49:34 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.2 $
+; $Date: 2002/07/31 19:49:34 $
+d30 2
+a31 1
+; 	Written by:	2002-07-28; Ken Mankoff
+a40 1
+;;; make sure the gray pixel is there
+d42 7
+d63 3
+@
+
+
+1.2
+log
+@fixed x/y bug
+@
+text
+@d1 1
+a1 1
+; $Id: plotg.pro,v 1.1 2002/07/29 18:07:13 mankoff Exp mankoff $
+d4 2
+a5 2
+; $Revision: 1.1 $
+; $Date: 2002/07/29 18:07:13 $
+d38 1
+a38 1
+ENDIF
+d56 3
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+; $Id$
+d3 3
+a5 3
+; $Author$
+; $Revision$
+; $Date$
+d8 1
+a8 1
+PRO plotg, xx, yy, _EXTRA=e
+d34 5
+a38 1
+IF ( n_elements( yy ) EQ 0 ) THEN yy = indgen( n_elements( xx ) )
+d55 4
+a58 1
+; $Log$
+@

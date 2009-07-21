@@ -1,0 +1,297 @@
+head	1.2;
+access;
+symbols;
+locks
+	mankoff:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2001.09.11.17.27.18;	author mankoff;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.09.10.17.08.08;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@keogram producer for SNOE
+@
+
+
+1.2
+log
+@switched to using imdisp to display keogram.
+have dates (using snoe_date()) working for
+rather large ranges (1 year plus). Still does
+not work for short ranges, but thats okay, 'cuase
+this is a keogram procedure!
+@
+text
+@PRO noden_day_lat_alt, type, startday, stopday, lv=lv, sv=sv, $
+                       alt=alt, ch=ch, log=log, ps=ps, $
+                       help=help, _EXTRA=e
+
+!fancy = 1
+IF ((KEYWORD_SET(help)) OR (N_PARAMS() EQ 0)) THEN BEGIN
+  PRINT, " "
+  PRINT, "   NODEN_DAY_LAT_ALT, type, startday, stopdoy, $"
+  PRINT, "                      lv=lv, sv=sv, alt=alt, $"
+  PRINT, "                      ch=ch, log=log, ps=ps, help=help, $"
+  PRINT, " "
+  PRINT, "   type = 'geo' OR 'mag'"
+  PRINT, "   startday = start day of plot (yyyyddd)"
+  PRINT, "   stopdoy = last day of plot (yyyyddd)"
+  PRINT, "   lv = large[st] value of data. [ default: 60E7 ]"
+  PRINT, "   sv = small[est] value of data. [ default: 3E7 ] (only with /log)"
+  PRINT, "   alt = altitude [ default: 106 km ]"
+  PRINT, "   ch = channel [ default: 2 ]"
+  PRINT, "   /log = alog10( data )"
+  PRINT, "   /help = display this message"
+  PRINT, "   /ps = create postscript file 'idl.ps'"
+  PRINT, " "
+  PRINT, "   for PMCs, use alt=90, /log, lv=200e7, sv=20e7"
+  PRINT, " "
+  PRINT, "   NOTE: all keywords to PLOT, CONTOUR, TV, etc. are accepted"
+  PRINT, " "
+  RETURN
+ENDIF
+
+index0 = snoe_date( startday, /from_yyyyddd, /to_mission )
+index1 = snoe_date( stopday, /from_yyyyddd, /to_mission )
+
+IF (NOT KEYWORD_SET(ch)) THEN ch = 2
+IF (NOT KEYWORD_SET(alt)) THEN alt = 106
+IF (NOT KEYWORD_SET(lv)) THEN lv = 60e7
+IF (NOT KEYWORD_SET(sv)) THEN sv = 3e7
+
+file = STRCOMPRESS('NO_' + STRING(ch) + '_day_' + type + '.dat', /REMOVE)
+IF (type EQ 'mag') THEN $
+  ytitle = 'Geomagnetic Latitude' ELSE ytitle = 'Geographic Latitude'
+
+graphics = FLOAT(255)
+IF KEYWORD_SET(ps) THEN BEGIN
+    old_disp = !d.name
+    set_plot,'ps'
+    charsize = 2 & charthick = 4
+    pthick=4 & xthick=4 & ythick=4
+    DEVICE, /color, bits=8, /landscape
+ENDIF
+
+disp = !d.name
+LOADCT, 15, file='/halley2/snoesci/uvs/SNOE_colors.tbl'
+
+;Open Data File
+CLOSE, 1
+OPENR, 1, file
+size = FSTAT(1)
+size = size.size/(38.*29.*4.)
+data = ASSOC(1, FLTARR(38,29,size))
+data = data[0]
+CLOSE,1
+
+dayspan = index1 - index0 + 1
+lats = data[ 0:36, 28, 0 ]      ;latitude scale
+alts = fix( REFORM( data[ 37, 0:27, 0 ] ) ) ;altitude scale
+ind = where( alts eq alt )
+data = transpose( reform( data[ 0:36, ind, index0:index1 ] ) )
+data[ [0,1,34,35], * ] = 0
+
+IF (KEYWORD_SET(log)) THEN BEGIN
+    str_alt = STRCOMPRESS( '(' + STRING(alt), /REMOVE)
+    ptitle=STRCOMPRESS('Log Nitric Oxide Density ' + str_alt +   ' km)')
+    IF (alt EQ 90) THEN BEGIN
+        ptitle=STRCOMPRESS('Polar Mesospheric Clouds (log)')
+    ENDIF 
+    PRINT, max(data(*,4:32)), max(data(*,16:20))
+    PRINT, lv, sv
+    data = (ALOG10( (data/ (sv) )>1) )
+    data = (graphics/ALOG10( lv/sv )) * data
+ENDIF ELSE BEGIN
+    str_alt = STRCOMPRESS( '(' + STRING(alt), /REMOVE)
+    ptitle=STRCOMPRESS('Nitric Oxide Density ' + str_alt + ' km)')
+    PRINT, max(data(*,4:32)), lv
+    data = (graphics/lv) * data
+ENDELSE
+
+;;; xrange code BEGIN
+;xrange = [ index0, index1 ]-index0
+;xrange = [ index0, index1 ]
+dates = [ [79,172,266,355]+1998000, $
+          [79,172,266,355]+1999000, $
+          [79,172,266,355]+2000000, $
+          [79,172,266,355]+2001000 ]
+xtickn = ['079!c(1998)','172','266','355',$
+          '079!c(1999)','172','266','355',$
+          '079!c(2000)','172','266','355',$
+          '079!c(2001)','172','266','355']
+xtickv = [ 79,172,266,355, $
+           [79,172,266,355]+365, $
+           [79,172,266,355]+365*2, $
+           [79,172,266,355]+365*2+366 ] - 70
+
+range = where( startday LE dates AND stopday GE dates )
+
+xtickn = xtickn[ range ]
+xticks = n_elements( range )-1
+xtitle = '!cDay of Year'
+
+md = dates
+FOR i = 0, 15 DO md[i] = snoe_date( dates[i], /from_yyyyddd, /to_mission )
+start_md = snoe_date( startday, /from_yyyyddd, /to_mission )
+xtickv = xtickv - start_md
+;sh = min( range )
+;xtickv = shift( xtickv, sh )
+;xtickv = shift( xtickv, xticks )
+;xtickv = xtickv[ range ]
+;;; xrange code END
+
+aspect=.7
+imdisp, data, /erase, /axis, title=ptitle, $
+        yrange=[-90,90], yticklen=-.02, yticks=6, $
+        yminor=3, ystyle=1, ythick=ythick, $
+        ytitle=ytitle, $
+        xstyle=1, xticklen=-.02, xthick=xthick, xticks=xticks, $
+        xtitle=xtitle, xrange=xrange, xtickname=xtickn, xtickv=xtickv, $
+        charsize=charsize, charthick=charthick, pthick=pthick, $
+        aspect=aspect, position=[.2,.1,.9,.9], $
+        _EXTRA=e
+
+IF (disp EQ 'PS') THEN BEGIN
+    device, /close
+    SET_PLOT, old_disp
+    plot_clear
+    PRINT, "file: idl.ps created (old file destroyed)"
+    PRINT, "$clwb [options] idl.ps"
+ENDIF
+END
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d13 2
+a14 2
+  PRINT, "   startday = start day of plot (yyddd)"
+  PRINT, "   stopdoy = last day of plot (yyddd)"
+d30 2
+a31 5
+;stopday0 = stopday-98070
+;stopday = stopday-98000
+;startday0 = startday-98070
+;startday = startday-98000
+;dayspan = stopday-startday+1
+a32 33
+!x.tickv = 0
+!x.tickname = ' '
+!x.range = 0
+!x.tickv = [ 079, 172, 266, 355 ]
+!x.tickname = ['079', '172', '266', '355']
+!x.ticks = 3
+IF ( startday LT 98365 ) THEN BEGIN
+    PRINT, "initializing for 1998..."
+    !x.title = 'Day of Year (1998)'
+    stopday0 = stopday - 98070
+    startday0 = startday - 98070
+    dayS = startday - 98001 + 1
+ENDIF ELSE IF ( ( startday GE 99001 ) AND ( startday LT 99365 ) ) THEN BEGIN
+    PRINT, "initializing for 1999..."
+    !x.title = 'Day of Year (1999)'
+    startday0 = startday - 99001 + 295
+    stopday0 = stopday - 99001 + 295
+    dayS = startday - 99001 + 1
+ENDIF
+
+IF ( ( startday LE 98365 ) AND ( stopday GT 98001+365+79 ) ) THEN BEGIN
+    ;;; already went into first "IF" statement...
+    PRINT, "initializing for 1998 & 1999..."
+    !x.tickv = [ 079, 172, 266, 355, 079+365, 172+365, 266+365, 355+365 ]
+    !x.tickname = ['079!c(1998)','172', '266','355', $
+                   '079!c(1999)','172', '266', '355' ]
+    !x.title = '!cDay of Year'
+    !x.ticks = 7
+ENDIF
+dayspan = stopday-startday+1
+days = INDGEN(dayspan) + dayS
+print, startday, stopday, startday0, stopday0, days[0], days[n_elements(days)-1]
+
+d38 1
+a38 1
+s=STRCOMPRESS('NO_' + STRING(ch) + '_day_' + type + '.dat', /REMOVE)
+d40 1
+a40 2
+  !y.title = 'Geomagnetic Latitude' ELSE $
+  !y.title = 'Geographic Latitude'
+d46 2
+a47 5
+    !p.charsize=2
+    !p.charthick = 4
+    !p.thick=4
+    !x.thick=4
+    !y.thick=4
+a48 7
+    IF (KEYWORD_SET(th)) THEN BEGIN
+        DEVICE, filename="idl.ps", /landscape
+        !p.thick = th
+        !p.charthick = !p.thick
+        !x.thick = !p.thick
+        !y.thick = !p.thick
+    ENDIF
+a50 8
+!y.range=[-90,90]
+!x.style=1
+!x.ticklen = -.02
+!y.ticklen = !x.ticklen
+!y.ticks=6
+!y.minor=3
+!y.style=1
+
+a54 1
+ERASE
+d56 1
+a56 1
+OPENR, 1, s
+d63 6
+a68 9
+lats = data[0:36,28,0]          ;latitude scale
+alts = fix(reform(data[37,0:27,0])) ;altitude scale
+ind = where(alts eq alt)
+data = data[0:36,ind,startday0:stopday0]
+data = REFORM(data,37,dayspan)  ;transpose to xz plane (2D)
+data = TRANSPOSE(data)
+blank = FLTARR(dayspan, 37)
+blank[0,1] = data[*,1:35]
+data = blank
+d72 1
+a72 1
+    !p.title=STRCOMPRESS('Log Nitric Oxide Density ' + str_alt +   ' km)')
+d74 1
+a74 1
+        !p.title=STRCOMPRESS('Polar Mesospheric Clouds (log)')
+d82 1
+a82 1
+    !p.title=STRCOMPRESS('Nitric Oxide Density ' + str_alt + ' km)')
+d87 15
+a101 5
+CONTOUR, data, days, lats, /NODATA, _EXTRA=e
+px = !X.WINDOW * !D.X_VSIZE
+py = !Y.WINDOW * !D.Y_VSIZE
+sx = px[1] - px[0] + 1
+sy = py[1] - py[0] + 1
+d103 27
+a130 3
+    TV, data, px[0], py[0], xsize=sx, ysize=sy, _EXTRA=e
+    CONTOUR, data, days, lats, /NODATA, /NOERASE, _EXTRA=e
+    ;;; xyouts,345,80,strtrim(alt),alignment=.5
+a135 4
+ENDIF ELSE IF (disp EQ 'X') THEN BEGIN
+    TV, CONGRID(data,sx, sy), px[0], py[0], _EXTRA=e
+    CONTOUR, data, days, lats, /NODATA, /NOERASE, _EXTRA=e
+    ;;;xyouts,345,80,strtrim(alt),alignment=.5
+@

@@ -1,0 +1,252 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2002.07.29.23.15.30;	author mankoff;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.07.24.02.17.17;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@Fixed TVSCL-like bug with LV
+@
+text
+@; $Id: grid_globe.pro,v 1.1 2002/07/24 02:17:17 mankoff Exp $
+;
+; $Author: mankoff $
+; $Revision: 1.1 $
+; $Date: 2002/07/24 02:17:17 $
+;
+; $Log: grid_globe.pro,v $
+; Revision 1.1  2002/07/24 02:17:17  mankoff
+; Initial revision
+;
+;
+;+
+; NAME:
+;	GRID_GLOBE
+;
+; PURPOSE:
+;   This procedure displays a 2D array onto a globe.
+;
+; CATEGORY:
+;   SNOE, image, display
+;
+; CALLING SEQUENCE:
+;   GRID_GLOBE, DATA
+;
+; INPUTS:
+;   DATA: A 2D FLOAT array.
+;
+; OPTIONAL INPUTS:
+;   None
+;	
+; KEYWORD PARAMETERS:
+;   LAT:   The center latitude of the image [ 0 ]
+;   LONG:  The center longitud of the image [ 0 ]
+;   LV:    The MAX (Large Value) to scale the data with [ max( data ) ]
+;   SV:    The MIN (Small Value) to scale the data with (only used
+;          with LOG) [ LV / 20. ]
+;   CONTINENTS: Set this keyword to draw the continents
+;   GGRID: Set this keyword to draw a Geographic grid
+;   MGRID: Set this keyword to draw a Magnetic grid
+;   CCOLOR:The colortable index of the Continents [ 0 ]
+;   GCOLOR:The colortable index of the Geo Grid [ 0 ]
+;   MCOLOR:The colortable index of the Mag Grid [ 255 ]
+;   LOG:   Set this kewyord to image the log of the data
+;   ROT:   Set this keyword to the number of degrees to rotate the globe
+;   XSIZE: Xsize of the image (pixels) [ 400 ]
+;   YSIZE: Ysize of the image (pixels) [ 400 ]
+;   PS:    Set this keyword to produce a Postscript image
+;   EPS:   Set this keyword to produce a Encapsulated Postscript image
+;   GIF:   Set this keyword to produce a GIF image
+;   FILENAME: The name of the output file (no extension) [ gg5.* ]
+;   NOX:   Set this keyword to NOT display the image to X
+;
+;   _EXTRA is used for the following routines:
+;      MAP_SET, MAP_IMAGE, MAP_CONTINENTS, MAP_GRID, MAG_GRID,
+;      LOAD_CGM, DEVICE, PLOTS, and possibly others...
+;
+; OUTPUTS:
+;   An image
+;
+; SIDE EFFECTS:
+;   Modifies the !MAP system variable.
+;   Modifies the Z buffer
+;   Modifies the DEVICE setting if /PS or /EPS set
+;
+; RESTRICTIONS:
+;   None known
+;
+; PROCEDURE:
+;   See MAP_SET and "MAP_PROJECTIONS" in the IDL documentation.
+;
+; EXAMPLE:
+;   To get a first brief look at the data, use the following code,
+;   which produces a cylindrica projection with the continents for
+;   reference.
+;        
+;             GRID_GLOBE, data, /cont
+;
+;   To produce a globe centered on the North Magnetice Pole,
+;   orthographic projection, with geographic grid, magnetic grid, and
+;   continents drawn on ... And produce output in both GIF and PS
+;   format (named 'test.gif' and 'test.ps' respectively), with the
+;   data BILINEARLY smoothed ... And the continents drawn thick, and
+;   the auroral oval drawn VERY thick, and the continents drawn in
+;   BLUE (index 10 in the SNOE color table), use this code:
+;
+;             GRID_GLOBE, data, lat=81.5, long=277.5, /ortho, /gg,
+;             /mg, /cont, /PS, /GIF, fname='test', /BILINEAR,
+;             MLINETHICK=2, OVAL=4, CCOLOR=10
+;
+; MODIFICATION HISTORY:
+; 	Written by:	KDM, 1998 - 2001
+;   2002-07-23. KDM. Added documentation. Modified to run on the 24 bit
+;                    displays at GI. Cleaned up code. Put into RCS.
+;-
+
+PRO grid_globe, data_con, $
+                lat=lat, long=long, lv=lv, sv=sv, $
+                continents=continents, gGrid=gGrid, mGrid=mGrid, $
+                ccolor=ccolor, gcolor=gcolor, mcolor=mcolor, $
+                log=log, rot=rot, $
+                xsize=xsize, ysize=ysize, $
+                ps=ps, gif=gif, eps=eps, noX=noX, filename=filename, $
+                _EXTRA=e
+
+IF (n_params() EQ 0) THEN BEGIN
+    DOC_LIBRARY, 'grid_globe'
+    MESSAGE, "Must pass in 2D data array", /CONT
+    RETURN
+ENDIF
+
+disp = !d.name
+data = FLOAT( data_con )
+
+IF ( n_elements( gcolor ) EQ 0 ) THEN gGridColor = 0 ELSE gGridColor=gcolor
+IF ( n_elements( mcolor ) EQ 0 ) THEN mGridColor = 255 ELSE mGridColor=mcolor
+IF ( n_elements( ccolor ) EQ 0 ) THEN contColor = 0 ELSE contColor=ccolor
+
+IF ( NOT keyword_set( xsize ) ) THEN xsize = 400
+IF ( NOT keyword_set( ysize ) ) THEN ysize = 400
+
+IF ( NOT keyword_set( filename ) ) THEN filename = 'gg5'
+IF ( NOT keyword_set( lv ) ) THEN lv = !SNOE.f.l3_lv
+IF ( keyword_set( log) AND NOT keyword_set( sv ) ) THEN sv = lv / 20.
+IF ( N_ELEMENTS( sv ) EQ 0 ) THEN sv = 0
+
+IF ( n_elements( lat  ) EQ 0) THEN lat = 0
+IF ( n_elements( long ) EQ 0) THEN long = 0
+
+IF ( n_elements( rot ) EQ 0 ) THEN BEGIN
+    IF ( lat LT 0 ) THEN rot = 180
+    IF ( lat GE 0 ) THEN rot = 0
+ENDIF
+
+SET_PLOT, 'z'
+DEVICE, SET_RESOLUTION=[ xsize, ysize ]
+
+map_set, lat, long, rot, /cyl, /noborder, /iso, _EXTRA=e
+IF ( keyword_set( mgrid ) ) THEN $
+  cgm_temp = mag_grid( latdel=10, londel=30, _EXTRA=e )
+
+;;; image the SNOE data onto the globe.
+IF ( keyword_set( log ) ) THEN BEGIN ;;; log
+    data = alog10( ( data/sv ) > 1 )
+    view = ( ( 254. / alog10( lv/sv ) ) * data ) > 1
+ENDIF ELSE view = ( data * 254 / lv) > 1  ;;; linear
+
+img = map_image( view, xx, yy, /compress, _EXTRA=e )
+tv, img, xx, yy
+IF ( keyword_set( continents ) ) THEN $
+  map_continents, mlinethick=1, color=contColor, _EXTRA=e
+IF ( keyword_set( gGrid ) ) THEN $
+  map_grid, glinestyle=0, color=gGridColor, latdel=10, londel=30, _EXTRA=e
+map_horizon, color=gGridColor
+img = tvrd()
+
+;;; add the CGM grid to the SNOE data
+IF ( keyword_set( mGrid ) ) THEN BEGIN
+    img[ where( cgm_temp EQ 1 ) ] = mGridColor
+    tv, img
+ENDIF
+map_horizon, color=gGridColor
+fimage = tvrd( )
+
+;;; postscript
+IF ( keyword_set( ps ) ) THEN BEGIN
+    set_plot, 'ps'
+    filename = strcompress( string( filename ) + '.ps', /remove_all )
+    device, encapsulated=0, /color, bits_per_pixel=8, $
+      /portrait, filename=filename, $
+      xsize=xsize*.028, ysize=ysize*.028, $
+      _EXTRA=e
+    tv, fimage
+    device,/close
+ENDIF
+
+;;; eps (encapsulated postscript)
+IF ( keyword_set( eps ) ) THEN BEGIN
+    set_plot, 'ps'
+    filename = strcompress( string( filename ) + '.eps', /remove_all )
+    device, /encapsulated, /color, bits_per_pixel=8, $
+      /portrait, filename=filename, $
+      xsize=xsize*.028, ysize=ysize*.028, $
+      _EXTRA=e
+    tv, fimage
+    device,/close
+ENDIF
+
+;;; gif image
+IF ( keyword_set( gif ) ) THEN BEGIN
+    filename = strcompress( string( filename ) + '.gif', /remove_all )
+    write_gif, filename, fimage
+ENDIF
+
+;;; x windows
+IF ( NOT keyword_set( noX ) ) THEN BEGIN
+    set_plot, 'x'
+    IF ( !d.window EQ -1) THEN window
+    IF ( !d.x_size NE xsize OR !d.y_size NE ysize ) THEN $
+      window, !d.window, xsize=xsize, ysize=ysize
+    tv, fimage
+ENDIF
+set_plot, disp
+END
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+; $Id$
+d3 7
+a9 3
+; $Author$
+; $Revision$
+; $Date$
+a10 1
+; $Log$
+d122 1
+a122 1
+IF ( NOT keyword_set( lv ) ) THEN lv = max( data )
+@

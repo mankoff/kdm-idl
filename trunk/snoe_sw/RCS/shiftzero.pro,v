@@ -1,0 +1,82 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2002.08.30.08.47.06;	author mankoff;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.08.01.04.09.37;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@shortened variable names
+@
+text
+@;
+; $Id$
+;
+; $Author$
+; $Revision$
+; $Date$
+;
+
+
+;;; This procedure is based upon the IDL SHIFT Function.
+;;; But... This function zeroes out the data that gets "wrapped"
+;;;
+;;; See IDL documentation on SHIFT, and see code below
+;;;
+;;; It is designed for VECTORS, not multi-dimensionaly arrays.
+
+FUNCTION shiftzero, array, sh
+d = array
+s = N_ELEMENTS( d ) - 1
+d = SHIFT( d, sh )
+IF ( sh GT 0 ) THEN d[ 0 : ( sh - 1 ) ] = 0 ELSE $
+IF ( sh LT 0 ) THEN d[ ( s + sh + 1 ) : s ] = 0
+RETURN, d
+END
+
+;
+; $Log$
+;
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 23
+a23 15
+
+;;; This procedure is the same as the IDL SHIFT procedure, BUT:
+;;; It fills with zero rather than 'wraps' the array around.
+
+FUNCTION shiftzero, shArray, shAmount
+
+output = shArray
+shArraySize = N_ELEMENTS( output ) - 1
+
+output = SHIFT( output, shAmount )
+IF ( shAmount GT 0 ) THEN output[ 0 : ( shAmount - 1 ) ] = 0 ELSE $
+IF ( shAmount LT 0 ) THEN output[ ( shArraySize + shAmount + 1 ) : shArraySize ] = 0
+
+RETURN, output
+
+d26 3
+@

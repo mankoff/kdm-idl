@@ -1,0 +1,98 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2002.09.26.00.53.46;	author mankoff;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.08.01.23.33.17;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@added docs
+@
+text
+@; $Id: doy.pro,v 1.1 2002/08/01 23:33:17 mankoff Exp mankoff $
+; 
+; $Author: mankoff $
+; $Revisions$
+; $Date: 2002/08/01 23:33:17 $
+;
+;+
+; NAME:
+;	DOY
+;
+; PURPOSE:
+;       Print (or optionally return) the current UT DOY
+;
+; CATEGORY:
+;       SNOE, date
+;
+; CALLING SEQUENCE:
+;       DOY, today
+;
+; OPTIONAL OUTPUTS:
+;       today: contains the day-of-year of today in London
+;
+; EXAMPLE:
+;       To print the current doy:
+;          IDL> DOY
+;       To get the current doy in a variable:
+;          IDL> DOY, var
+;
+; MODIFICATION HISTORY:
+; 	Written by: KDM
+;	2002-09-25: KDM; Added docs
+;-
+
+PRO doy, doy
+cmd = 'date +%j'
+spawn, cmd, out
+IF ( n_params() EQ 0 ) THEN print, out[0]
+doy = long( out[ 0 ] )
+END
+
+;
+; $Log: doy.pro,v $
+; Revision 1.1  2002/08/01 23:33:17  mankoff
+; Initial revision
+;
+;
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+; $Id$
+d3 1
+a3 1
+; $Author$
+d5 1
+a5 1
+; $Date$
+d7 26
+a32 2
+
+;;; print the day of year, unless an arg is supplied.
+d42 4
+a45 1
+; $Log$
+@

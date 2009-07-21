@@ -1,0 +1,130 @@
+head	1.1;
+access;
+symbols;
+locks
+	mankoff:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2002.07.26.00.11.33;	author mankoff;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@PRO noden_lat_alt_day, type, doy, lv=lv, ps=ps, ch=ch, help=help
+
+IF (KEYWORD_SET(help) OR (N_PARAMS() EQ 0)) THEN BEGIN
+   PRINT, "   noden_lat_alt_day, 'type', doy [,lv=lv] [,/ps] [,/help]"
+   PRINT, "   doy = day of year of plot"
+   PRINT, "   lv = largest value of plot"
+   PRINT, "   ch = [1 | 2]"
+   PRINT, "   /ps = produce file 'idl.ps' of doy"
+   PRINT, "   /help = display this text"
+   RETURN
+END
+
+IF (NOT KEYWORD_SET(lv)) THEN lv = 45
+IF (NOT KEYWORD_SET(ch)) THEN ch = 2
+s = STRCOMPRESS('NO_' + STRING(ch) + '_day_' + type + '.dat', /REMOVE_ALL)
+file = s
+
+!x.range=[-90,90]
+!x.ticks=6
+!x.style=1
+!x.minor=3
+!y.ticks=5
+!y.minor=2
+!y.range=[80,180]
+!y.style=1
+!x.ticklen = -.02
+!y.ticklen = !x.ticklen
+!p.title='Nitric Oxide Density (10!u7!n cm!u-3!n)'
+!y.title='Altitude (km)'
+IF (type EQ 'geo') THEN $
+	!x.title = 'Geographic Latitude' ELSE $
+	!x.title = 'Geomagnetic Latitude'
+
+CLOSE, 1
+OPENR, 1, file, /SWAP_ENDIAN
+data = ASSOC(1, FLTARR(38,29))
+day = (doy - 98070)
+data = data[day]
+yyddd =LONG(data(37,28))
+blank = fltarr(37,31)
+con_data = (data[0:36,0:27] / 1e7)
+PRINT, max(con_data(4:32,0:21))
+blank(0,3) = con_data[0:36,0:22]
+colbar=findgen(24)*lv/24.
+blank(6,1)=colbar
+alt=data(37,0:27)
+lat=data(0:36,28)
+
+IF (KEYWORD_SET(ps)) THEN BEGIN
+  !p.charsize = 2
+  !p.charthick = 4
+  !p.thick = 4
+  !x.thick = 4
+  !y.thick = 4
+  old_disp = !d.name					;to change back?
+  set_plot, 'ps'
+  ;loadct, 15, file='/halley2/snoesci/uvs/graphics/SNOE_colors.tbl'
+  snoect
+  device,/color,bits=8,/landscape
+  image = blank*255./lv					;;; PS
+  PRINT, "creating file: 'idl.ps' (deleting old)"
+  PRINT, "$clwb [printer options] idl.ps
+  PRINT, " "
+  CONTOUR, con_data, lat, alt, /NODATA
+  px = !X.WINDOW * !D.X_VSIZE
+  py = !Y.WINDOW * !D.Y_VSIZE
+  sx = (px[1] - px[0] + 1)
+  sy = (py[1] - py[0] + 1)
+  title = STRCOMPRESS(STRING(yyddd), /REMOVE_ALL)
+  img = ROTATE(image, 7)
+  TV, img, px[0], py[0], xsize=sx, ysize=sy
+  CONTOUR, blank, /NODATA, /NOERASE
+  XYOUTS, 0, 164, title, alignment=.5, color=255
+  xyouts,-60, 174, '0', alignment=.5, color=255
+  xyouts, 50, 174, lv , alignment=.5, color=255
+  device,/close				;close (only one image per file)
+  set_plot, old_disp			;change back to whatever it was.
+  plot_clear
+ENDIF ELSE IF (!d.name EQ 'X') THEN BEGIN
+  !p.charsize = 2
+  !p.charthick = 2
+  !p.thick = 2
+  !x.thick = 2
+  !y.thick = 2
+  ;loadct, 15, file='/halley2/snoesci/uvs/graphics/SNOE_colors.tbl'
+  snoect
+  image = blank*255./lv					;;; X
+  CONTOUR, con_data, lat, alt, /NODATA
+  px = !X.WINDOW * !D.X_VSIZE
+  py = !Y.WINDOW * !D.Y_VSIZE
+  sx = (px[1] - px[0] + 1)
+  sy = (py[1] - py[0] + 1)
+  title = STRCOMPRESS(STRING(yyddd), /REMOVE_ALL)
+  img = ROTATE(image, 7)
+  TV, CONGRID(img, sx, sy), px[0], py[0]
+  CONTOUR, blank, /NODATA, /NOERASE
+  XYOUTS, 0, 164, title, alignment=.5
+  xyouts, -60, 174, '0', alignment=.5
+  xyouts, 50, 174, lv, alignment=.5
+ENDIF ELSE BEGIN
+  PRINT, "ERROR: display must be of type 'X' or 'PS'"
+ENDELSE
+
+CLOSE, 1
+RETURN
+END
+@
