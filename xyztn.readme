@@ -1,0 +1,59 @@
+README.TXT for clouds
+
+== Contents ==
+  * Installation
+  * Data Format
+  * Usage
+
+ 
+== Installation ==
+
+1) Go here: http://dev.edgcm.columbia.edu/browser/misc/clouds
+2) Select "Zip Archive" from bottom of page to get all code
+3) Unzip somewhere
+4) Create sub folder "data"
+5) Data file is here: http://edgcm.columbia.edu/~mankoff/clouds/
+6) untar into data subfolder
+
+
+== Data Format ==
+
+The data format required by the xyztn is quite simple. A
+structure named 'data' of n 3D or 4D arrays is passed in.
+The name of each array array is used to populate the user
+interface items. All arrays must of equal dimensions. 
+
+Examples:
+
+;; 1 3D array
+IDL> data = { foo: findgen(3,3,3) }
+;; 1 4D array
+IDL> data = { foo_4D: findgen(3,3,3,3) }
+;; 2 3D arrays
+IDL> data = { foo: findgen(42,43,44), bar: randomn(seed,42,43,44) } 
+
+Or, if 'data0' and 'data1' and 'model' are all 4D arrays of data of
+the same dimensions:
+
+;; 3 4D arrays
+IDL> data = { satellite: data0, $
+              airplane:  data1, $
+		      model:     model }   
+
+Then,
+IDL> xyztn, data=data
+
+
+== Usage ==
+
+% idl
+IDL> xyztn, data=some_struct
+IDL> xyztn, load='some_struct.sav'
+
+StreamLines: Set via a right-click, or by holding down the middle mouse 
+button and interactively dragging and setting them. On my MacBook this is 
+done via a two-fingered tap on the track-pad (right), or holding down the 
+Command (Apple) key (middle) and clicking and dragging
+
+Scaling: Hold down shift, and drag up/down, or click higher/lower. The 
+higher up the screen you go, the larger the scaling.
