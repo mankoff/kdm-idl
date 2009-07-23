@@ -129,17 +129,47 @@ pro test_linestring, kml
   kml->add, d
 end
 
+pro test_balloon_style, kml
+  ;; http://code.google.com/apis/kml/documentation/kmlreference.html#balloonstyle
+  kml = obj_new('kdm_kml', file='test.kml')
+  d = obj_new( 'kdm_kml_document', visibility=1, name="BalloonStyle.kml", open=1 )
+
+  ;;f = obj_new( 'kdm_kml_folder', id='folder1', name='aFolder', visib=1 )
+  st = obj_new('kdm_kml_style', id='exampleBalloonStyle')
+  bs = obj_new( 'kdm_kml_balloonstyle', $
+                bgcolor='ffffffbb', $
+                text=kdm_cdata( '<b><font color="#CC0000" size="+3">$[name]</font></b>' + $
+                                '<br/><br/>' + $
+                                '<font face="Courier">$[description]</font>' + $
+                                '<br/><br/>' + $
+                                'Extra text that will appear in the description balloon' + $
+                                '<br/><br/>' + $
+                                '<!-- insert the to/from hyperlinks -->' + $
+                                '<!-- $[geDirections] -->' ) $
+                )
+  p = obj_new( 'kdm_kml_placemark', lon=-122.370533, lat=37.823842, alt=0, $
+               name='BalloonStyle', styleURL='#exampleBalloonStyle', $
+               description='An example of a BalloonStyle', open=1, snippet=0 )
+
+  kml->add, d
+  d->add, st
+  st->add, bs
+  d->add, p
+end
 
 
 ;;test_simple, kml
 ;;test_oneplacemark, kml
 ;;test_placemarks, kml
-test_placemark_icon, kml
+;;test_placemark_icon, kml
 ;;test_timespan, kml
 ;;test_groundoverlay, kml
 ;;test_linestring, kml
+test_balloon_style, kml
 
-kml->hierarchy
-kml->saveKML, /kmz, /openge
+;;kml->hierarchy
+;;kml->saveKML, /kmz, /openge
+kml->saveKML, /openGE
 obj_destroy, kml
+spawn, 'cat test.kml'
 end
