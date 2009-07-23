@@ -8,6 +8,7 @@ pro kdm_kml_feature::KMLbody, kml=kml
   self->buildsource, kml, self->xmlTag( "visibility", self.visibility*1 )
   self->buildsource, kml, self->xmlTag( "open", self.open*1 )
   if self.description ne '' then self->buildsource, kml, self->xmlTag( "description",self.description )
+  if self.styleURL ne '' then self->buildsource, kml, self->xmlTag( "styleUrl",self.styleURL )
   if self.snippet ne '' then self->buildsource, kml, '<Snippet maxLines="'+STRTRIM(self.snipmaxlines,2)+'">'+self.snippet+'</Snippet>'
   ;;self->buildsource, kml, self->xmlTag( "Snippet", self.Snippet )
   ;;self->buildsource, kml, '<Snippet maxlines="0"></Snippet>'
@@ -32,10 +33,10 @@ pro kdm_kml_feature__define, class
             open: 0B, $
             Snippet: '', $
             snipmaxlines: 0, $
-            description: '' $
+            description: '', $
             ;; abstractview
             ;; timeprimitive, $
-            ;;styleURL: '', $
+            styleURL: '' $
             ;;styleSelector, $
             ;; region
             ;; extendeddata

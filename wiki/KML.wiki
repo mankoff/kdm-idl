@@ -7,7 +7,9 @@ http://code.google.com/apis/kml/documentation/kmlreference.html
 
 http://code.google.com/apis/kml/documentation/Images/hierarchy_withgx.gif
 
-= Example =
+= Examples =
+
+== Placemark Example ==
 
 {{{
 <Placemark>
@@ -39,10 +41,73 @@ doc->add, placemark
 kml->add, doc
 kml->kmlSave, /kmz, /openGE
 }}}
+
+Reference: http://code.google.com/apis/kml/documentation/kmlreference.html#placemark
+
+== BalloonStyle Example ==
+
+{{{
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+  <name>BalloonStyle.kml</name>
+  <open>1</open>
+  <Style id="exampleBalloonStyle">
+    <BalloonStyle>
+      <!-- a background color for the balloon -->
+      <bgColor>ffffffbb</bgColor>
+      <!-- styling of the balloon text -->
+      <text><![CDATA[
+      <b><font color="#CC0000" size="+3">$[name]</font></b>
+      <br/><br/>
+      <font face="Courier">$[description]</font>
+      <br/><br/>
+      Extra text that will appear in the description balloon
+      <br/><br/>
+      <!-- insert the to/from hyperlinks -->
+      $[geDirections]
+      ]]></text>
+    </BalloonStyle>
+  </Style>
+  <Placemark>
+    <name>BalloonStyle</name>
+    <description>An example of BalloonStyle</description>
+    <styleUrl>#exampleBalloonStyle</styleUrl>
+    <Point>
+      <coordinates>-122.370533,37.823842,0</coordinates>
+    </Point>
+  </Placemark>
+</Document>
+</kml>
 }}}
 
+Becomes:
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+{{{
+kml = obj_new('kdm_kml', file='test.kml')
+d = obj_new( 'kdm_kml_document', visibility=1, name="BalloonStyle.kml", open=1 )
+
+st = obj_new('kdm_kml_style', id='exampleBalloonStyle')
+bs = obj_new( 'kdm_kml_balloonstyle', $
+              bgcolor='ffffffbb', $
+              text=kdm_cdata( '<b><font color="#CC0000" size="+3">$[name]</font></b>' + $
+                              '<br/><br/>' + $
+                              '<font face="Courier">$[description]</font>' + $
+                              '<br/><br/>' + $
+                              'Extra text that will appear in the description balloon' + $
+                              '<br/><br/>' + $
+                              '<!-- insert the to/from hyperlinks -->' + $
+                              '<!-- $[geDirections] -->' ) $
+              )
+p = obj_new( 'kdm_kml_placemark', lon=-122.370533, lat=37.823842, alt=0, $
+             name='BalloonStyle', styleURL='#exampleBalloonStyle', $
+             description='An example of a BalloonStyle', open=1, snippet=0 )
+
+kml->add, d
+d->add, st
+st->add, bs
+d->add, p
+}}}
+
+Reference: http://code.google.com/apis/kml/documentation/kmlreference.html#balloonstyle
+
