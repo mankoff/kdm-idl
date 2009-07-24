@@ -1,7 +1,7 @@
 pro kdm_kml_point::KMLhead, kml=kml
   self->kdm_kml_geometry::KMLhead, kml=kml
-  ;;self->buildsource, kml, '<!-- Point -->'
-  self->buildsource, kml, '<Point id="'+self.ID+'">'
+  ;;self->buildsource, kml, '<Point id="'+self.ID+'">'
+  self->buildsource, kml, '<Point>'
 end
 pro kdm_kml_point::KMLbody, kml=kml
   self->kdm_kml_geometry::KMLbody, kml=kml
@@ -14,7 +14,6 @@ pro kdm_kml_point::KMLbody, kml=kml
 end
 pro kdm_kml_point::KMLtail, kml=kml
   self->buildsource, kml, '</Point>'
-  ;;self->buildsource, kml, '<!-- /Point -->'
   self->kdm_kml_geometry::KMLtail, kml=kml
 end
 
@@ -22,6 +21,7 @@ end
 function kdm_kml_point::init, _EXTRA=e
   if self->kdm_kml_geometry::init(_EXTRA=e) ne 1 then return, 0
   self.x_altitudeMode='relativeToGround'
+  self.id = "pointID"
   self->setProperty, _EXTRA=e
  return, 1
 end
