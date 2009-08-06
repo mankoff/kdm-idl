@@ -60,15 +60,6 @@ if keyword_set(close) then begin
          if keyword_set(pdf) then spawn, 'open '+pdfname+'&'
       endif
    endif
-;;    if keyword_set(png) then begin
-;;       file_info = strsplit( ps_info[2], /extract )
-;;       psname = file_info[1]
-;;       pngname = STRMID(psname,0,STRLEN(psname)-3) + '.png'
-;;       if keyword_set(rotate) then rotcmd = '-rotate ' + STRTRIM(rotate,2) + ' ' ELSE rotcmd=''
-;;       spawn, 'convert ' + rotcmd + psname + ' ' + pngname, output
-;;       if keyword_set(crop) then message, "CROP not supported for PNG yet", /CONTINUE
-;;       if keyword_set(show) then spawn, 'open '+pngname+'&'
-;;    endif
 
 endif
 end
@@ -78,7 +69,7 @@ pro kdm_ps_test
   kdm_ps, /landscape, filename='kdm_ps_test.ps'
   plot, [0,0], [1,1], position=[0,0,1,1]
   xyouts, 0.5, 0.5, 'Hello World', align=0.5, charsize=3
-  kdm_ps, /close, /pdf
+  kdm_ps, /close, /pdf, /show, /crop
 end
 
 

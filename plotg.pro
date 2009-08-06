@@ -55,7 +55,7 @@ plot, xx, yy, /NODATA, color=254, $
 ;;; re-plot the frame, ticks, and titles in the foreground color
 plot, xx, yy, /NODATA, /NOERASE, _EXTRA=e
 ;;; plot the data
-oplot, xx, yy, _EXTRA=e
+if not xiastrec( e, 'nodata' ) then oplot, xx, yy, _EXTRA=e
 
 tvlct,rsave,gsave,bsave
 END
