@@ -171,7 +171,7 @@ pro kdm_kml::KMLtail, kml=kml
   self->buildsource, kml, '</kml>'
 end
 pro kdm_kml::prettyprint, str
-  message, "Printing...", /CONTINUE
+  ;;message, "Printing...", /CONTINUE
   if self->getProperty(/filename) ne '' then $
      openw, lun, self->getProperty(/filename), /get_lun else lun = -1
   printf, lun, str
