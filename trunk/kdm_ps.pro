@@ -32,6 +32,10 @@ if not keyword_set(close) then begin
 endif
 
 if keyword_set(close) then begin
+   if !d.name ne 'PS' then begin
+      MESSAGE, "Cannot close. Current device is " + !d.name, /CONTINUE
+      return
+   endif
    help, /device, out=ps_info
    device, /close
    set_plot, 'x'

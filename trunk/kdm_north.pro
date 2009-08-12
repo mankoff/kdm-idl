@@ -9,7 +9,7 @@ pro kdm_north, lon=lon, lat=lat, _EXTRA=e
   offset = (max(ns)-min(ns))*0.1
   line = map_2points( x0, y0, x0, y0+offset, dpath=1, _EXTRA=e )
   plots, line, _EXTRA=e
-  arrow, x0, y0+offset-0.0000001, x0, y0+offset, /data, hsize=8, _EXTRA=e
+  arrow, x0, y0+offset-0.0000001, x0, y0+offset, /data, _EXTRA=e;, hsize=8, _EXTRA=e
   xyouts, x0, y0+offset, " N!c", charsize=2, align=0.0, color=255, _EXTRA=e
 end
 

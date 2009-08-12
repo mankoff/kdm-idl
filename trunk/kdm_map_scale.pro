@@ -20,6 +20,7 @@
 ;; 11) add legend
 
 pro kdm_map_scale, x=x, y=y, $
+                   highlight=highlight, $
                    _EXTRA=e
 
   _debug=keyword_set(debug)
@@ -95,11 +96,19 @@ pro kdm_map_scale, x=x, y=y, $
   goal_str = STRTRIM( round( goal/scale), 2 ) + ' ' + suffix
   
 
-  xyoutsbg, (x0+x1)/2., y0+0.005, $
-          goal_str, $
-          align=0.5, $
-          /norm, $
-          _EXTRA=e
+  if keyword_set(highlight) then begin
+     xyoutsbg, (x0+x1)/2., y0+0.005, $
+               goal_str, $
+               align=0.5, $
+               /norm, $
+               _EXTRA=e
+  ENDIF else begin
+     xyouts, (x0+x1)/2., y0+0.005, $
+               goal_str, $
+               align=0.5, $
+               /norm, $
+               _EXTRA=e
+  endelse
   ;;arrow, x0, y0, x1, y0+offset, /data, hsize=8, _EXTRA=e
   ;;xyouts, x0, y0+, " N!c", charsize=2, align=0.0, color=255, _EXTRA=e
 
