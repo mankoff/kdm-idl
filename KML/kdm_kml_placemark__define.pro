@@ -1,13 +1,13 @@
-pro kdm_kml_placemark::KMLhead, kml=kml
-  self->kdm_kml_feature::KMLhead, kml=kml
-  self->buildsource, kml, '<Placemark id="'+self.ID+'">'
+pro kdm_kml_placemark::KMLhead
+  self->kdm_kml_feature::KMLhead
+  self->buildsource, '<Placemark id="'+self.ID+'">'
 end
 ;; pro kdm_kml_placemark::KMLbody, kml=kml
 ;;   self->kdm_kml_feature::KMLbody, kml=kml
 ;; end
-pro kdm_kml_placemark::KMLtail, kml=kml
-  self->buildsource, kml, '</Placemark>'
-  self->kdm_kml_feature::KMLtail, kml=kml
+pro kdm_kml_placemark::KMLtail
+  self->buildsource, '</Placemark>'
+  self->kdm_kml_feature::KMLtail
 end
 
 pro kdm_kml_placemark::setproperty, lat=lat, lon=lon, _EXTRA=e

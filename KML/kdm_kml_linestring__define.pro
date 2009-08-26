@@ -1,17 +1,17 @@
-pro kdm_kml_linestring::KMLhead, kml=kml
-  self->kdm_kml_geometry::KMLhead, kml=kml
-  self->buildsource, kml, '<LineString id="'+self.ID+'">'
+pro kdm_kml_linestring::KMLhead
+  self->kdm_kml_geometry::KMLhead
+  self->buildsource, '<LineString id="'+self.ID+'">'
 end
-pro kdm_kml_linestring::KMLbody, kml=kml
-  self->kdm_kml_geometry::KMLbody, kml=kml
-  self->buildsource, kml, self->xmlTag( 'extrude', self.extrude*1 )
-  self->buildsource, kml, self->xmlTag( 'tessellate', self.tessellate*1 )
-  self->buildsource, kml, self->xmlTag( 'altitudeMode', self.x_altitudeMode )
-  self->buildsource, kml, self->xmlTag( 'coordinates', self.coordinates )
+pro kdm_kml_linestring::KMLbody
+  self->kdm_kml_geometry::KMLbody
+  self->buildsource, self->xmlTag( 'extrude', self.extrude*1 )
+  self->buildsource, self->xmlTag( 'tessellate', self.tessellate*1 )
+  self->buildsource, self->xmlTag( 'altitudeMode', self.x_altitudeMode )
+  self->buildsource, self->xmlTag( 'coordinates', self.coordinates )
 end
-pro kdm_kml_linestring::KMLtail, kml=kml
-  self->buildsource, kml, '</LineString>'
-  self->kdm_kml_geometry::KMLtail, kml=kml
+pro kdm_kml_linestring::KMLtail
+  self->buildsource, '</LineString>'
+  self->kdm_kml_geometry::KMLtail
 end
 
 pro kdm_kml_linestring::setproperty, lat=lat, lon=lon, alt=alt, _EXTRA=e

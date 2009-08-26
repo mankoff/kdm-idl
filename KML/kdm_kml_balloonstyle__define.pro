@@ -82,17 +82,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-pro kdm_kml_balloonstyle::KMLhead, kml=kml
-  self->buildsource, kml, '<BalloonStyle id="'+self.ID+'">'
+pro kdm_kml_balloonstyle::KMLhead
+  self->buildsource, '<BalloonStyle id="'+self.ID+'">'
 end
-pro kdm_kml_balloonstyle::KMLbody, kml=kml
-  if self.bgcolor ne '' then self->buildsource, kml, self->xmlTag( 'bgColor', self.bgColor )
-  if self.x_textcolor ne '' then self->buildsource, kml, self->xmlTag( 'textColor', self.x_textcolor )
-  if self.text ne '' then self->buildsource, kml, self->xmlTag( 'text', self.text )
-  if self.displayMode ne '' then self->buildsource, kml, self->xmlTag( 'displayMode', self.displayMode )
+pro kdm_kml_balloonstyle::KMLbody
+  if self.bgcolor ne '' then self->buildsource, self->xmlTag( 'bgColor', self.bgColor )
+  if self.x_textcolor ne '' then self->buildsource, self->xmlTag( 'textColor', self.x_textcolor )
+  if self.text ne '' then self->buildsource, self->xmlTag( 'text', self.text )
+  if self.displayMode ne '' then self->buildsource, self->xmlTag( 'displayMode', self.displayMode )
 end
-pro kdm_kml_balloonstyle::KMLtail, kml=kml
-  self->buildsource, kml, '</BalloonStyle>'
+pro kdm_kml_balloonstyle::KMLtail
+  self->buildsource, '</BalloonStyle>'
 end
 
 function kdm_kml_balloonstyle::init, _EXTRA=e

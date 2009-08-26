@@ -95,22 +95,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-pro kdm_kml_lookat::KMLhead, kml=kml
-  self->buildsource, kml, '<LookAt id="'+self.ID+'">'
+pro kdm_kml_lookat::KMLhead
+  self->buildsource, '<LookAt id="'+self.ID+'">'
 end
 
-pro kdm_kml_lookat::KMLbody, kml=kml
-  if self.longitude ne 0 then self->buildsource, kml, self->xmlTag( 'longitude', self.longitude )
-  if self.latitude ne 0 then self->buildsource, kml, self->xmlTag( 'latitude', self.latitude )
-  if self.altitude ne 0 then self->buildsource, kml, self->xmlTag( 'altitude', STRTRIM(LONG(self.altitude),2) )
-  if self.heading ne 0 then self->buildsource, kml, self->xmlTag( 'heading', self.heading )
-  if self.tilt ne 0 then self->buildsource, kml, self->xmlTag( 'tilt', self.tilt )
-  if self.range ne 0 then self->buildsource, kml, self->xmlTag( 'range', self.range )
-  if self.x_altitudeMode ne '' then self->buildsource, kml, self->xmlTag( 'x_altitudeMode', self.x_altitudeMode )
+pro kdm_kml_lookat::KMLbody
+  if self.longitude ne 0 then self->buildsource, self->xmlTag( 'longitude', self.longitude )
+  if self.latitude ne 0 then self->buildsource, self->xmlTag( 'latitude', self.latitude )
+  if self.altitude ne 0 then self->buildsource, self->xmlTag( 'altitude', STRTRIM(LONG(self.altitude),2) )
+  if self.heading ne 0 then self->buildsource, self->xmlTag( 'heading', self.heading )
+  if self.tilt ne 0 then self->buildsource, self->xmlTag( 'tilt', self.tilt )
+  if self.range ne 0 then self->buildsource, self->xmlTag( 'range', self.range )
+  if self.x_altitudeMode ne '' then self->buildsource, self->xmlTag( 'x_altitudeMode', self.x_altitudeMode )
 end
 
-pro kdm_kml_lookat::KMLtail, kml=kml
-  self->buildsource, kml, '</LookAt>'
+pro kdm_kml_lookat::KMLtail
+  self->buildsource, '</LookAt>'
 end
 
 function kdm_kml_lookat::init, _EXTRA=e

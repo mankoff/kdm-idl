@@ -7,23 +7,20 @@
 ;;     </Icon>
 ;;   </IconStyle>
 ;; </Style>
-pro kdm_kml_iconstyle::KMLhead, kml=kml
-  ;;self->kdm_kml_::KMLhead, kml=kml
-  ;;self->buildsource, kml, '<Style id="'+self.ID+'">'
-  self->buildsource, kml, '<IconStyle>'
-  if self.scale ne 0 then self->buildsource, kml,  self->xmlTag( 'scale', self.scale )
-  if self.color ne '' then self->buildsource, kml,  self->xmlTag( 'color', self.color )
-  self->buildsource, kml, '<Icon id="'+self.ID+'">'
+pro kdm_kml_iconstyle::KMLhead
+  ;;self->kdm_kml_::KMLhead
+  ;;self->buildsource, '<Style id="'+self.ID+'">'
+  self->buildsource, '<IconStyle>'
+  if self.scale ne 0 then self->buildsource, self->xmlTag( 'scale', self.scale )
+  if self.color ne '' then self->buildsource, self->xmlTag( 'color', self.color )
+  self->buildsource, '<Icon id="'+self.ID+'">'
 end
-pro kdm_kml_iconstyle::KMLbody, kml=kml
-  ;;self->kdm_kml_container::KMLbody, kml=kml
-  self->buildsource, kml,  self->xmlTag( 'href', self.href )
+pro kdm_kml_iconstyle::KMLbody
+  self->buildsource,  self->xmlTag( 'href', self.href )
 end
-pro kdm_kml_iconstyle::KMLtail, kml=kml
-  self->buildsource, kml, '</Icon>'
-  self->buildsource, kml, '</IconStyle>'
-  ;;self->buildsource, kml, '</Style>'
-  ;;self->kdm_kml_container::KMLtail, kml=kml
+pro kdm_kml_iconstyle::KMLtail
+  self->buildsource, '</Icon>'
+  self->buildsource, '</IconStyle>'
 end
 
 pro kdm_kml_iconstyle::setProperty, color=color, _EXTRA=e

@@ -1,20 +1,17 @@
 
-pro kdm_kml_feature::KMLhead, kml=kml
-  self->buildsource, kml, '<!-- Feature id="'+self.ID+'" -->'
+pro kdm_kml_feature::KMLhead
+  self->buildsource, '<!-- Feature id="'+self.ID+'" -->'
 end
-pro kdm_kml_feature::KMLbody, kml=kml
-  ;;self->kdm_kml_object::printbody, _EXTRA=e
-  if self.name ne '' then self->buildsource, kml, self->xmlTag("name",self.name)
-  self->buildsource, kml, self->xmlTag( "visibility", self.visibility*1 )
-  self->buildsource, kml, self->xmlTag( "open", self.open*1 )
-  if self.description ne '' then self->buildsource, kml, self->xmlTag( "description",self.description )
-  if self.styleURL ne '' then self->buildsource, kml, self->xmlTag( "styleUrl",self.styleURL )
-  if self.snippet ne '' then self->buildsource, kml, '<Snippet maxLines="'+STRTRIM(self.snipmaxlines,2)+'">'+self.snippet+'</Snippet>'
-  ;;self->buildsource, kml, self->xmlTag( "Snippet", self.Snippet )
-  ;;self->buildsource, kml, '<Snippet maxlines="0"></Snippet>'
+pro kdm_kml_feature::KMLbody
+  if self.name ne '' then self->buildsource, self->xmlTag("name",self.name)
+  self->buildsource, self->xmlTag( "visibility", self.visibility*1 )
+  self->buildsource, self->xmlTag( "open", self.open*1 )
+  if self.description ne '' then self->buildsource, self->xmlTag( "description",self.description )
+  if self.styleURL ne '' then self->buildsource, self->xmlTag( "styleUrl",self.styleURL )
+  if self.snippet ne '' then self->buildsource, '<Snippet maxLines="'+STRTRIM(self.snipmaxlines,2)+'">'+self.snippet+'</Snippet>'
 end
-pro kdm_kml_feature::KMLtail, kml=kml
-  self->buildsource, kml, '<!-- /Feature -->'
+pro kdm_kml_feature::KMLtail
+  self->buildsource, '<!-- /Feature -->'
 end
 
 function kdm_kml_feature::init, _EXTRA=e

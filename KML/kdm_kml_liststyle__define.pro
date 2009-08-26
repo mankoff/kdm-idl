@@ -84,15 +84,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-pro kdm_kml_liststyle::KMLhead, kml=kml
-  self->buildsource, kml, '<ListStyle id="'+self.ID+'">'
+pro kdm_kml_liststyle::KMLhead
+  self->buildsource, '<ListStyle id="'+self.ID+'">'
 end
-pro kdm_kml_liststyle::KMLbody, kml=kml
-  if self.listItemType ne '' then self->buildsource, kml, self->xmlTag( 'listItemType', self.listItemType )
-  if self.bgColor ne '' then self->buildsource, kml, self->xmlTag( 'bgColor', self.bgColor )
+pro kdm_kml_liststyle::KMLbody
+  if self.listItemType ne '' then self->buildsource, self->xmlTag( 'listItemType', self.listItemType )
+  if self.bgColor ne '' then self->buildsource, self->xmlTag( 'bgColor', self.bgColor )
 end
-pro kdm_kml_liststyle::KMLtail, kml=kml
-  self->buildsource, kml, '</ListStyle>'
+pro kdm_kml_liststyle::KMLtail
+  self->buildsource, '</ListStyle>'
 end
 
 function kdm_kml_liststyle::init, _EXTRA=e

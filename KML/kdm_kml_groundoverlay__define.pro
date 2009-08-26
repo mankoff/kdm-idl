@@ -1,25 +1,25 @@
-pro kdm_kml_groundoverlay::KMLhead, kml=kml
-  self->kdm_kml_overlay::KMLhead, kml=kml
-  self->buildsource, kml, '<GroundOverlay id="'+self.ID+'">'
+pro kdm_kml_groundoverlay::KMLhead
+  self->kdm_kml_overlay::KMLhead
+  self->buildsource, '<GroundOverlay id="'+self.ID+'">'
 end
-pro kdm_kml_groundoverlay::KMLbody, kml=kml
-  self->kdm_kml_overlay::KMLbody, kml=kml
-  self->buildsource, kml, "<!-- Groundoverlay Body -->"
+pro kdm_kml_groundoverlay::KMLbody
+  self->kdm_kml_overlay::KMLbody
+  self->buildsource, "<!-- Groundoverlay Body -->"
   
-  self->buildsource, kml, self->xmlTag( 'altitude', self.altitude )
-  self->buildsource, kml, self->xmlTag( 'altitudeMode', self.x_altitudemode )
-  self->buildsource, kml, '<LatLonBox>'
-  self->buildsource, kml, self->xmlTag( 'north', self.north )
-  self->buildsource, kml, self->xmlTag( 'south', self.south )
-  self->buildsource, kml, self->xmlTag( 'east', self.east )
-  self->buildsource, kml, self->xmlTag( 'west', self.west )
-  self->buildsource, kml, self->xmlTag( 'rotation', self.rotation )
-  self->buildsource, kml, '</LatLonBox>'
+  self->buildsource, self->xmlTag( 'altitude', self.altitude )
+  self->buildsource, self->xmlTag( 'altitudeMode', self.x_altitudemode )
+  self->buildsource, '<LatLonBox>'
+  self->buildsource, self->xmlTag( 'north', self.north )
+  self->buildsource, self->xmlTag( 'south', self.south )
+  self->buildsource, self->xmlTag( 'east', self.east )
+  self->buildsource, self->xmlTag( 'west', self.west )
+  self->buildsource, self->xmlTag( 'rotation', self.rotation )
+  self->buildsource, '</LatLonBox>'
   
 end
-pro kdm_kml_groundoverlay::KMLtail, kml=kml
-  self->buildsource, kml, '</GroundOverlay>'
-  self->kdm_kml_overlay::KMLtail, kml=kml
+pro kdm_kml_groundoverlay::KMLtail
+  self->buildsource, '</GroundOverlay>'
+  self->kdm_kml_overlay::KMLtail
 end
 
 function kdm_kml_groundoverlay::init, _EXTRA=e

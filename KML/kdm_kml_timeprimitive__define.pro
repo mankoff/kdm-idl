@@ -1,10 +1,10 @@
-pro kdm_kml_timeprimitive::KMLhead, kml=kml
-  self->buildsource, kml, '<!-- Timeprimitive id="'+self.ID+'" -->'
+pro kdm_kml_timeprimitive::KMLhead
+  self->buildsource, '<!-- Timeprimitive id="'+self.ID+'" -->'
 end
-pro kdm_kml_timeprimitive::KMLbody, kml=kml
+pro kdm_kml_timeprimitive::KMLbody
 end
-pro kdm_kml_timeprimitive::KMLtail, kml=kml
-  self->buildsource, kml, '<!-- /Timeprimitive -->'
+pro kdm_kml_timeprimitive::KMLtail
+  self->buildsource, '<!-- /Timeprimitive -->'
 end
 
 function kdm_kml_timeprimitive::init, _EXTRA=e
