@@ -1,17 +1,14 @@
 
-pro kdm_kml_document::KMLhead, kml=kml
-  self->kdm_kml_container::KMLhead, kml=kml
-  self->buildsource, kml, '<!-- Document -->'
-  self->buildsource, kml, '<Document id="'+self.ID+'">'
+pro kdm_kml_document::KMLhead
+  self->kdm_kml_container::KMLhead
+  self->buildsource, '<Document id="'+self.ID+'">'
 end
-pro kdm_kml_document::KMLbody, kml=kml
-  self->kdm_kml_container::KMLbody, kml=kml
-  ;;self->buildsource, kml, 'document body'
+pro kdm_kml_document::KMLbody
+  self->kdm_kml_container::KMLbody
 end
-pro kdm_kml_document::KMLtail, kml=kml
-  self->buildsource, kml, '</Document>'
-  self->buildsource, kml, '<!-- /Document -->'
-  self->kdm_kml_container::KMLtail, kml=kml
+pro kdm_kml_document::KMLtail
+  self->buildsource, '</Document>'
+  self->kdm_kml_container::KMLtail
 end
 
 function kdm_kml_document::init, _EXTRA=e

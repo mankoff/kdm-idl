@@ -47,14 +47,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-pro kdm_kml_style::KMLhead, kml=kml
-  self->buildsource, kml, '<Style id="'+self.ID+'">'
+pro kdm_kml_style::KMLhead
+  self->buildsource, '<Style id="'+self.ID+'">'
 end
-pro kdm_kml_style::KMLbody, kml=kml
+pro kdm_kml_style::KMLbody
   ;;
 end
-pro kdm_kml_style::KMLtail, kml=kml
-  self->buildsource, kml, '</Style>'
+pro kdm_kml_style::KMLtail
+  self->buildsource, '</Style>'
 end
 
 function kdm_kml_style::init, _EXTRA=e

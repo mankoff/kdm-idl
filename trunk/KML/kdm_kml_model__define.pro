@@ -1,41 +1,41 @@
-pro kdm_kml_model::KMLhead, kml=kml
-  self->kdm_kml_geometry::KMLhead, kml=kml
-  self->buildsource, kml, '<Model>'
+pro kdm_kml_model::KMLhead
+  self->kdm_kml_geometry::KMLhead
+  self->buildsource, '<Model>'
 end
-pro kdm_kml_model::KMLbody, kml=kml
-  self->kdm_kml_geometry::KMLbody, kml=kml
-  self->buildsource, kml, self->xmlTag( 'altitudeMode', self.x_altitudeMode )
+pro kdm_kml_model::KMLbody
+  self->kdm_kml_geometry::KMLbody
+  self->buildsource, self->xmlTag( 'altitudeMode', self.x_altitudeMode )
   ;; Location
-  self->buildsource, kml, "<Location>"
-  self->buildsource, kml, self->xmlTag( 'longitude', self.longitude )
-  self->buildsource, kml, self->xmlTag( 'latitude', self.latitude )
-  self->buildsource, kml, self->xmlTag( 'altitude', self.altitude )
-  self->buildsource, kml, "</Location>"
+  self->buildsource, "<Location>"
+  self->buildsource, self->xmlTag( 'longitude', self.longitude )
+  self->buildsource, self->xmlTag( 'latitude', self.latitude )
+  self->buildsource, self->xmlTag( 'altitude', self.altitude )
+  self->buildsource, "</Location>"
   ;; Orientation
-  self->buildsource, kml, "<Orientation>"
-  self->buildsource, kml, self->xmlTag( 'heading', self.heading )
-  self->buildsource, kml, self->xmlTag( 'tilt', self.tilt )
-  self->buildsource, kml, self->xmlTag( 'roll', self.roll )
-  self->buildsource, kml, "</Orientation>"
+  self->buildsource, "<Orientation>"
+  self->buildsource, self->xmlTag( 'heading', self.heading )
+  self->buildsource, self->xmlTag( 'tilt', self.tilt )
+  self->buildsource, self->xmlTag( 'roll', self.roll )
+  self->buildsource, "</Orientation>"
   ;; Scale
-  self->buildsource, kml, "<Scale>"
-  self->buildsource, kml, self->xmlTag( 'x', self.x_scale )
-  self->buildsource, kml, self->xmlTag( 'y', self.y_scale )
-  self->buildsource, kml, self->xmlTag( 'z', self.z_scale )
-  self->buildsource, kml, "</Scale>"
+  self->buildsource, "<Scale>"
+  self->buildsource, self->xmlTag( 'x', self.x_scale )
+  self->buildsource, self->xmlTag( 'y', self.y_scale )
+  self->buildsource, self->xmlTag( 'z', self.z_scale )
+  self->buildsource, "</Scale>"
   ;; Model URL
-  self->buildsource, kml, "<Link>"
-  self->buildsource, kml, self->xmlTag( 'href', self.link_href )
-  self->buildsource, kml, "</Link>"
+  self->buildsource, "<Link>"
+  self->buildsource, self->xmlTag( 'href', self.link_href )
+  self->buildsource, "</Link>"
   ;; other stuff
-  self->buildsource, kml, "<ResourceMap><Alias>"
-  self->buildsource, kml, self->xmlTag( 'targetHref', self.targetHref )
-  self->buildsource, kml, self->xmlTag( 'sourceHref', self.sourceHref )
-  self->buildsource, kml, "</Alias></ResourceMap>"
+  self->buildsource, "<ResourceMap><Alias>"
+  self->buildsource, self->xmlTag( 'targetHref', self.targetHref )
+  self->buildsource, self->xmlTag( 'sourceHref', self.sourceHref )
+  self->buildsource, "</Alias></ResourceMap>"
 end
-pro kdm_kml_model::KMLtail, kml=kml
-  self->buildsource, kml, '</Model>'
-  self->kdm_kml_geometry::KMLtail, kml=kml
+pro kdm_kml_model::KMLtail
+  self->buildsource, '</Model>'
+  self->kdm_kml_geometry::KMLtail
 end
 
 

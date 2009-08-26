@@ -63,15 +63,15 @@
 
 
 
-pro kdm_kml_colorstyle::KMLhead, kml=kml
+pro kdm_kml_colorstyle::KMLhead
 end
-pro kdm_kml_colorstyle::KMLbody, kml=kml
+pro kdm_kml_colorstyle::KMLbody
   if self.color ne '' then $
-     self->buildsource, kml, self->xmlTag( 'color', self.color )
+     self->buildsource, self->xmlTag( 'color', self.color )
   if self.x_colormode ne '' then $
-     self->buildsource, kml, self->xmlTag( 'colormode', self.x_colormode )
+     self->buildsource, self->xmlTag( 'colormode', self.x_colormode )
 end
-pro kdm_kml_colorstyle::KMLtail, kml=kml
+pro kdm_kml_colorstyle::KMLtail
 end
 
 function kdm_kml_colorstyle::init, _EXTRA=e

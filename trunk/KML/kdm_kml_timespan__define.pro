@@ -1,19 +1,18 @@
-pro kdm_kml_timespan::KMLhead, kml=kml
-  self->kdm_kml_timeprimitive::KMLhead, kml=kml
-  ;;self->buildsource, kml, '<!-- Timespan -->'
-  self->buildsource, kml, '<TimeSpan id="'+self.ID+'">'
+pro kdm_kml_timespan::KMLhead
+  self->kdm_kml_timeprimitive::KMLhead
+  ;;self->buildsource, '<!-- Timespan -->'
+  self->buildsource, '<TimeSpan id="'+self.ID+'">'
 end
-pro kdm_kml_timespan::KMLbody, kml=kml
-  self->kdm_kml_timeprimitive::KMLbody, kml=kml
+pro kdm_kml_timespan::KMLbody
+  self->kdm_kml_timeprimitive::KMLbody
   if self.timebegin ne '' then $
-     self->buildsource, kml, self->xmlTag( 'begin', self.timebegin )
+     self->buildsource, self->xmlTag( 'begin', self.timebegin )
   if self.timeend ne '' then $
-     self->buildsource, kml, self->xmlTag( 'end', self.timeend )
+     self->buildsource, self->xmlTag( 'end', self.timeend )
 end
-pro kdm_kml_timespan::KMLtail, kml=kml
-  self->buildsource, kml, '</TimeSpan>'
-  ;;self->buildsource, kml, '<!-- /TimeSpan -->'
-  self->kdm_kml_timeprimitive::KMLtail, kml=kml
+pro kdm_kml_timespan::KMLtail
+  self->buildsource, '</TimeSpan>'
+  self->kdm_kml_timeprimitive::KMLtail
 end
 
 

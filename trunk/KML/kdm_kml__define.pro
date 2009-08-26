@@ -29,30 +29,6 @@
 ;-
 
 
-;; given a string, insert it into the current KML file
-pro kdm_kml::inject
-
-;; inject this into the top level folder, setting the date to today:  
-;; Effect: Time sliders are expanded by default
-;;     <gx:Tour>
-;;       <name>Play me</name>
-;;       <gx:Playlist>
-;;         <gx:FlyTo>
-;;           <gx:duration>8.0</gx:duration>
-;;           <gx:flyToMode>bounce</gx:flyToMode>
-;;           <LookAt>
-;;             <longitude>-119.748584</longitudne>
-;;             <latitude>33.736266</latitude>
-;;             <altitude>0</altitude>
-;;             <heading>-9.295926</heading>
-;;             <tilt>84.0957450</tilt>
-;;             <range>4469.850414</range>
-;;             <gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-;;           </LookAt>
-;;         </gx:FlyTo>
-
-end
-
 ;+
 ;
 ; METHODNAME:
@@ -97,26 +73,48 @@ end
 ;   kml->kmlSave, /kmz, /openGE
 ;
 ;-
-pro kdm_kml::saveKML, kml=kml, recursive=recursive, kmz=kmz, openge=openge, _EXTRA=e
-  self->KMLhead, kml=kml
-  self->KMLbody, kml=kml
+pro kdm_kml::saveKML, recursive=recursive, $
+                      kmz=kmz, openge=openge, $
+                      _EXTRA=e
 
+  ;; open the file, and store the LUN
+  if not keyword_set(recursive) then begin
+     if self->getProperty(/filename) ne '' then $
+        openw, lun, self->getProperty(/filename), /get_lun else lun = -1
+     self.lun = lun
+
+     ;; hack to make the lun globally accessible. This should be
+     ;; doable inside the object hierarchy but I'm having
+     ;; trouble figuring it out... subclasses don't seem to see it...
+     DEFSYSV, '!KDM_KML_LUN', lun
+  endif
+
+  ;; print the header
+  self->KMLhead
+  self->KMLbody
+
+  ;; recursively print all children
   c=self.children
   if ptr_valid(c) then begin 
-     for i=0,n_elements(*c)-1 do begin
+     for i=0L,n_elements(*c)-1 do begin
         ;;print, label + obj_class(self)
         ;;(*c)[i]->Hierarchy, label='    '+label, /recursive
-        (*c)[i]->saveKML, kml=kml, /recursive
+        (*c)[i]->saveKML, /recursive
      endfor
-     self->KMLtail, kml=kml
-  endif else self->KMLtail, kml=kml
+     self->KMLtail
+  endif else self->KMLtail
 
   ;; kml contains all the source code for the file
   if not keyword_set(recursive) then begin
-     self->prettyprint, kml     ; save to file
+     ;;printf, lun, str
+     if lun ne -1 then free_lun, lun
+
+     ;;self->prettyprint, kml     ; save to file
      if keyword_set( kmz ) then self->kml2kmz, _EXTRA=e
      if keyword_set( openge ) AND self.filename ne '' then begin
-        file = keyword_set( kmz ) ? STRMID(self.filename,0,STRLEN(self.filename)-3)+'kmz' : self.filename
+        file = keyword_set( kmz ) ? $
+               STRMID(self.filename,0,STRLEN(self.filename)-3)+'kmz' : $
+               self.filename
         spawn, 'open -a "Google Earth" ' + file
      endif
   endif
@@ -142,7 +140,7 @@ pro kdm_kml::kml2kmz, dirs=dirs, include=include, exclude=exclude
      files = file_search( dirs, '*'+include+'*' )
      openw, lun, 'tmp.include', /get_lun
      printf, lun, kmlfile
-     for i = 0, n_elements(files)-1 do printf, lun, files[i]
+     for i = 0L, n_elements(files)-1 do printf, lun, files[i]
      free_lun, lun
      cmd = cmd + ' -i@tmp.include'
   endif
@@ -155,27 +153,20 @@ pro kdm_kml::kml2kmz, dirs=dirs, include=include, exclude=exclude
   ;;file_delete, kmlfile, tmp.include, 
 end
 
-pro kdm_kml::buildsource, kml, str
-  kml = kml + str + STRING(10B)
+pro kdm_kml::buildsource, kml
+  nl = STRING(10B)
+  printf, !KDM_KML_LUN, kml+nl
 end
-pro kdm_kml::KMLhead, kml=kml
-  kml = ''
-  self->buildsource, kml, '<?xml version="1.0" encoding="UTF-8"?>'
-  self->buildsource, kml, '<kml xmlns="http://www.opengis.net/kml/2.2"'
-  self->buildsource, kml, ' xmlns:gx="http://www.google.com/kml/ext/2.2">'
+pro kdm_kml::KMLhead
+  self->buildsource, '<?xml version="1.0" encoding="UTF-8"?>'
+  self->buildsource, '<kml xmlns="http://www.opengis.net/kml/2.2"'
+  self->buildsource, ' xmlns:gx="http://www.google.com/kml/ext/2.2">'
 end
-pro kdm_kml::KMLbody, kml=kml
-  self->buildsource, kml, "<!-- Top Level Body -->"
+pro kdm_kml::KMLbody
+  self->buildsource, "<!-- Top Level Body -->"
 end
-pro kdm_kml::KMLtail, kml=kml
-  self->buildsource, kml, '</kml>'
-end
-pro kdm_kml::prettyprint, str
-  ;;message, "Printing...", /CONTINUE
-  if self->getProperty(/filename) ne '' then $
-     openw, lun, self->getProperty(/filename), /get_lun else lun = -1
-  printf, lun, str
-  if lun ne -1 then free_lun, lun
+pro kdm_kml::KMLtail
+  self->buildsource, '</kml>'
 end
 
 function kdm_kml_object::xmlTag, tag, str, _EXTRA=e
@@ -196,8 +187,8 @@ end
 pro kdm_kml__define, class
   class = { kdm_kml, $
             inherits kdm, $
-            kml_source: '', $
             filename: '', $
+            LUN: 0, $
             inherits objtree }
 end
 

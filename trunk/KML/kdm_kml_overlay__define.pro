@@ -1,20 +1,18 @@
-pro kdm_kml_overlay::KMLhead, kml=kml
-  self->kdm_kml_feature::KMLhead, kml=kml
-  self->buildsource, kml, '<!-- Overlay -->'
+pro kdm_kml_overlay::KMLhead
+  self->kdm_kml_feature::KMLhead
+  self->buildsource, '<!-- Overlay -->'
 end
-pro kdm_kml_overlay::KMLbody, kml=kml
-  self->kdm_kml_feature::KMLbody, kml=kml
-  self->buildsource, kml, "<!-- Overlay Body -->"
-  
-  self->buildsource, kml, self->xmlTag( 'color', self.color )
-  self->buildsource, kml, self->xmlTag( 'drawOrder', self.draworder )
+pro kdm_kml_overlay::KMLbody
+  self->kdm_kml_feature::KMLbody
+  self->buildsource, "<!-- Overlay Body -->"
+  self->buildsource, self->xmlTag( 'color', self.color )
+  self->buildsource, self->xmlTag( 'drawOrder', self.draworder )
   self->buildsource, $ ;; nested href inside icon tags
-     kml, self->xmlTag( 'Icon', self->xmlTag( 'href', self.href ) )
-  
+     self->xmlTag( 'Icon', self->xmlTag( 'href', self.href ) )
 end
-pro kdm_kml_overlay::KMLtail, kml=kml
-  self->buildsource, kml, '<!-- /Overlay -->'
-  self->kdm_kml_feature::KMLtail, kml=kml
+pro kdm_kml_overlay::KMLtail
+  self->buildsource, '<!-- /Overlay -->'
+  self->kdm_kml_feature::KMLtail
 end
 
 function kdm_kml_overlay::init, _EXTRA=e

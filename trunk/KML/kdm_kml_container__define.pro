@@ -1,14 +1,14 @@
-pro kdm_kml_container::KMLhead, kml=kml
-  self->kdm_kml_feature::KMLhead, kml=kml
-  self->buildsource, kml, '<!-- Container -->'
+pro kdm_kml_container::KMLhead
+  self->kdm_kml_feature::KMLhead
+  self->buildsource, '<!-- Container -->'
 end
-pro kdm_kml_container::KMLbody, kml=kml
-  self->kdm_kml_feature::KMLbody, kml=kml
-  self->buildsource, kml, "<!-- Container Body -->"
+pro kdm_kml_container::KMLbody
+  self->kdm_kml_feature::KMLbody
+  self->buildsource, "<!-- Container Body -->"
 end
-pro kdm_kml_container::KMLtail, kml=kml
-  self->buildsource, kml, '<!-- /Container -->'
-  self->kdm_kml_feature::KMLtail, kml=kml
+pro kdm_kml_container::KMLtail
+  self->buildsource, '<!-- /Container -->'
+  self->kdm_kml_feature::KMLtail
 end
 
 function kdm_kml_container::init, _EXTRA=e

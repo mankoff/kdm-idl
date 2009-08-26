@@ -1,20 +1,20 @@
-pro kdm_kml_point::KMLhead, kml=kml
-  self->kdm_kml_geometry::KMLhead, kml=kml
-  ;;self->buildsource, kml, '<Point id="'+self.ID+'">'
-  self->buildsource, kml, '<Point>'
+pro kdm_kml_point::KMLhead
+  self->kdm_kml_geometry::KMLhead
+  ;;self->buildsource, '<Point id="'+self.ID+'">'
+  self->buildsource, '<Point>'
 end
-pro kdm_kml_point::KMLbody, kml=kml
-  self->kdm_kml_geometry::KMLbody, kml=kml
-  self->buildsource, kml, self->xmlTag( 'extrude', self.extrude*1 )
-  self->buildsource, kml, self->xmlTag( 'altitudeMode', self.x_altitudeMode )
+pro kdm_kml_point::KMLbody
+  self->kdm_kml_geometry::KMLbody
+  self->buildsource, self->xmlTag( 'extrude', self.extrude*1 )
+  self->buildsource, self->xmlTag( 'altitudeMode', self.x_altitudeMode )
   coordinates = STRTRIM(self.longitude,2) + ',' + $
                 STRTRIM(self.latitude,2) + ',' + $
                 STRTRIM(self.altitude,2)
-  self->buildsource, kml, self->xmlTag( 'coordinates', coordinates )
+  self->buildsource, self->xmlTag( 'coordinates', coordinates )
 end
-pro kdm_kml_point::KMLtail, kml=kml
-  self->buildsource, kml, '</Point>'
-  self->kdm_kml_geometry::KMLtail, kml=kml
+pro kdm_kml_point::KMLtail
+  self->buildsource, '</Point>'
+  self->kdm_kml_geometry::KMLtail
 end
 
 

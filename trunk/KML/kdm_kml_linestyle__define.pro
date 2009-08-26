@@ -37,14 +37,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-pro kdm_kml_linestyle::KMLhead, kml=kml
-  self->buildsource, kml, '<LineStyle id="'+self.ID+'">'
+pro kdm_kml_linestyle::KMLhead
+  self->buildsource, '<LineStyle id="'+self.ID+'">'
 end
-pro kdm_kml_linestyle::KMLbody, kml=kml
-  self->buildsource, kml, self->xmlTag( 'width', self.width )
+pro kdm_kml_linestyle::KMLbody
+  self->buildsource, self->xmlTag( 'width', self.width )
 end
-pro kdm_kml_linestyle::KMLtail, kml=kml
-  self->buildsource, kml, '</LineStyle>'
+pro kdm_kml_linestyle::KMLtail
+  self->buildsource, '</LineStyle>'
 end
 
 function kdm_kml_linestyle::init, _EXTRA=e
