@@ -39,7 +39,7 @@ pro test_placemarks, kml
   f0->add, p1
 
   ;;random placemarks
-  for i = 0, 100 do begin
+  for i = 0L, 10000 do begin
      istr = STRING(i,FORMAT='(I03)')
      p = obj_new('kdm_kml_placemark', $
                  id='Pid'+istr, $
@@ -158,6 +158,60 @@ pro test_balloon_style, kml
 end
 
 
+;; LinearRing
+pro test_linearring, kml
+  kml = obj_new('kdm_kml', file='test.kml')
+  d = obj_new( 'kdm_kml_document', visibility=1, id='docID' )
+  kml->add, d
+  pl = obj_new( 'kdm_kml_placemark', name='PlaceMark', id='placeID', $
+                description=kdm_cdata('Balloon contents...') )
+  d->add, pl
+  p = obj_new( 'kdm_kml_polygon', extrude=1, tessellate=1, $
+      x_altitudeMode='clampToGround', id='polyID' )
+  pl->add, p
+  p->add, obj_new( 'kdm_kml_linearring', lat=[0,1,1,0,0]-0.5, $
+                   lon=[0,0,1,1,0]-0.5, id='ringID' )
+end
+
+pro test_stylemap, kml
+  kml = obj_new('kdm_kml', file='test.kml')
+  d = obj_new( 'kdm_kml_document', visibility=1, id='docID' )
+  kml->add, d
+  pl = obj_new( 'kdm_kml_placemark', name='PlaceMark', id='placeID', $
+                description=kdm_cdata('Balloon contents...'), snippet=0 )
+  d->add, pl
+  p = obj_new( 'kdm_kml_polygon', extrude=1, tessellate=1, $
+      x_altitudeMode='clampToGround', id='polyID' )
+  pl->add, p
+  p->add, obj_new( 'kdm_kml_linearring', lat=[0,1,1,0,0]-0.5, $
+                   lon=[0,0,1,1,0]-0.5, id='ringID' )
+
+  ;; at this point we've set up a square of 1 degree lat/lon
+  ;; centered on (0,0). Lets make it pretty. We want: A white boundary
+  ;; line by default. When mouse-over, a bright green boundary line,
+  ;; and fill the square in 50% shaded.
+  style_normal = obj_new( 'kdm_kml_style', id='normal' )
+  linestyle = obj_new( 'kdm_kml_linestyle', width=3, color='ffffffff' ) ; 3 thick and white
+  polystyle = obj_new( 'kdm_kml_polystyle', color='00ffffff' ) ; transparent
+  style_normal->add, linestyle->clone()
+  style_normal->add, polystyle->clone()
+
+  style_highlight = obj_new( 'kdm_kml_style', id='highlight' )
+  linestyle = obj_new( 'kdm_kml_linestyle', width=3, color='ff00ff00' ) ; 3 thick and green
+  polystyle = obj_new( 'kdm_kml_polystyle', color='66ffffff' ) ; 50% transparent
+  style_highlight->add, linestyle->clone()
+  style_highlight->add, polystyle->clone()
+  
+  style_map = obj_new( 'kdm_kml_stylemap', id='stylemap', $
+                       normal=style_normal->getProperty(/id), $
+                       highlight=style_highlight->getProperty(/id) )
+  d->add, style_normal
+  d->add, style_highlight
+  d->add, style_map
+  pl->setProperty, style='#'+style_map->getProperty(/id)
+end  
+
+
 ;;test_simple, kml
 ;;test_oneplacemark, kml
 ;;test_placemarks, kml
@@ -165,11 +219,14 @@ end
 ;;test_timespan, kml
 ;;test_groundoverlay, kml
 ;;test_linestring, kml
-test_balloon_style, kml
+;;test_balloon_style, kml
+;;test_linearring, kml
+test_stylemap, kml
 
 ;;kml->hierarchy
 ;;kml->saveKML, /kmz, /openge
 kml->saveKML, /openGE
-obj_destroy, kml
-spawn, 'cat test.kml'
+;kml->saveKML
+;obj_destroy, kml
+;spawn, 'cat test.kml'
 end

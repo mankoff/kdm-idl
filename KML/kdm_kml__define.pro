@@ -154,8 +154,7 @@ pro kdm_kml::kml2kmz, dirs=dirs, include=include, exclude=exclude
 end
 
 pro kdm_kml::buildsource, kml
-  nl = STRING(10B)
-  printf, !KDM_KML_LUN, kml+nl
+  printf, !KDM_KML_LUN, kml
 end
 pro kdm_kml::KMLhead
   self->buildsource, '<?xml version="1.0" encoding="UTF-8"?>'
