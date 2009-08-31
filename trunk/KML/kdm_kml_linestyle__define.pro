@@ -41,6 +41,7 @@ pro kdm_kml_linestyle::KMLhead
   self->buildsource, '<LineStyle id="'+self.ID+'">'
 end
 pro kdm_kml_linestyle::KMLbody
+  self->kdm_kml_colorstyle::KMLbody
   self->buildsource, self->xmlTag( 'width', self.width )
 end
 pro kdm_kml_linestyle::KMLtail
