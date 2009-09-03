@@ -62,6 +62,8 @@ pro kdm::GetProperty,_REF_EXTRA=e
   endfor
 end 
 
+
+
 PRO kdm::SetProperty, _Extra=extraProperties
   ;; Error handling.
   Catch, theError
@@ -99,6 +101,19 @@ PRO kdm::SetProperty, _Extra=extraProperties
      endelse
   ENDFOR
 END
+
+;; http://www.dfanning.com/tips/copy_objects.html
+FUNCTION kdm::Clone, Object=object
+  IF( NOT Keyword_Set(object) ) THEN object = self
+  obj = object
+  filename = 'clone.sav'
+  Save, obj, Filename=filename
+  obj = 0  ;; This is the trick to get the restore to 'clone' what it saved
+  Restore, filename
+  File_Delete, filename, /Quiet
+  RETURN, obj
+END
+
 
 pro kdm::cleanup
   ;; free memory allocated to pointer when destroying object
