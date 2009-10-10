@@ -1,10 +1,154 @@
+;
+;+
+; CLASS_NAME:
+;	KDM
+;
+; PURPOSE:
+;	A KDM object is a generic top-level object that all other objects
+;   I write should inherit.
+;
+; CATEGORY:
+;	Object
+;
+; SUPERCLASSES:
+;   None
+;
+; SUBCLASSES:
+;   Almost all of my other objects
+;
+; CREATION:
+;   kdm = OBJ_NEW( 'kdm' )
+;
+; METHODS:
+;   GetProperty (procedure and function)
+;   SetProperty
+;   Clone
+;   Cleanup
+;   Init
+;
+; MODIFICATION HISTORY:
+; 	Written by:	Ken Mankoff. 2009
+;	2009-09-22: Added documentation
+;
+; =============================================================
+;
+; METHODNAME:
+;   KDM::GetProperty
+;
+; PURPOSE:
+;   The GetProperty function returns any property of this or any
+;   subclass. This function is similar to the KDM::GetProprety
+;   procedure except that it is a function.
+;
+; CALLING SEQUENCE:
+;   result = kdm->getProperty(/aProperty [,/ALL])
+;
+; KEYWORD PARAMETERS:
+;	aProperty: Any property
+;   ALL: return a structure containing all of the properties 
+;        of this object
+;
+; OUTPUTS:
+;   The property is returned. If it is a pointer it is dereferenced.
+;
+; PROCEDURE:
+;   See http://www.dfanning.com/tips/getproperty.html
+;
+; EXAMPLE:
+;   To get the debug_kdm property from the KDM object:
+;
+;   o = obj_new( 'kdm' )
+;   print, o->getProperty(/debug_kdm)
+;
+; =============================================================
+;
+; METHODNAME:
+;   kdm::GetProperty
+;
+; PURPOSE:
+;   This procedure is similar to the KDM::GetProperty function except
+;   it is a procedure. This allows more than one property to be
+;   returned in a single call
+;
+; CALLING SEQUENCE:
+;	kdm->GetProperty, p0=p0, p1=p1, ..., pN=pN
+;
+; KEYWORD PARAMETERS:
+;   p0: One property you would like to have from this object
+;   P1: Another.
+;
+; OUTPUTS:
+;   The properties requested are returned. Any properties that are
+;   pointers are dereferenced.
+;
+; PROCEDURE:
+;   See http://www.dfanning.com/tips/getproperty.html
+;
+; EXAMPLE:
+;   To get the debug_kdm property from the KDM object:
+;
+;   o = obj_new( 'kdm' )
+;   o->getProperty, debug_kdm=debug
+;
+; =============================================================
+;
+; METHODNAME:
+;   KDM::SetProperty
+;
+; PURPOSE:
+;   This procedure sets a property for this object or any object that
+;   inherits this one
+;
+; CALLING SEQUENCE:
+;   KDM->SetProperty, PROPERTY=p
+;
+; KEYWORD PARAMETERS:
+;   PROPERTY: A property of this or a subclass. The property is set to p
+;
+; SIDE EFFECTS:
+;   The property of the object is changed to the input value
+;
+; PROCEDURE:
+;   See http://www.dfanning.com/tips/getproperty.html
+;
+; EXAMPLE:
+;   To set the debug_kdm property to 1:
+;
+;   o = obj_new( 'kdm' )
+;   o->setProperty, debug_kdm=1
+;
+; =============================================================
+;
+; METHODNAME:
+;   KDM::Clone
+;
+; PURPOSE:
+;   Deep-clone an object
+;
+; CALLING SEQUENCE:
+;   Result = Obj -> Clone()
+;
+; OUTPUTS:
+;   A copy of the object and all of the object properties (deep, recursive)
+;
+; SIDE EFFECTS:
+;   A save file is temporarily created in the current directory
+;
+; RESTRICTIONS:
+;   Must have write access to the current directory
+;
+; PROCEDURE:
+;   See http://www.dfanning.com/tips/copy_objects.html
+;
+; EXAMPLE:
+;   To clone an object:
+;   o = obj_new( 'kdm' )
+;   o2 = o->Clone()
+;
+;-
 
-;; kdm_define
-;;
-;; generic object all other objects might inherit
-;;
+
 ;; http://www.dfanning.com/tips/getproperty.html
-
 FUNCTION kdm::GetProperty, all=all, _Extra=extraKeyword
   
   ;; /ALL is from http://www.dfanning.com/code_tips/allprops.html
