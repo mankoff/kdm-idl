@@ -43,7 +43,7 @@ pro s87::load, file
   self->setProperty, depth=float(d), temp=float(t), salt=float(s)
   
   kdm_filepathext, file, root=root
-  self->setProperty, note='ODEN ' + root
+  self->setProperty, note=root
 end
 
 pro s87__define, class
