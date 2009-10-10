@@ -1,3 +1,131 @@
+;
+;+
+; CLASS_NAME:
+;	KDM_DT
+;
+; PURPOSE:
+;   A datetime object stores a date and/or time
+;
+; CATEGORY:
+;   Date, Time, Object
+;
+; SUPERCLASSES:
+;   Inherits the KDM object
+;
+; SUBCLASSES:
+;   None
+;
+; CREATION:
+;   Result = OBJ_NEW( 'kdm_dt' )
+;
+; METHODS:
+;   TimeStamp, setProperty, Init, Cleanup
+;
+; RESTRICTIONS:
+;   * Does not pay attention to leap year
+;   * Accepts conflicting keywords and defaults (dt->setProperty, month=2, doy=2)
+;   * Does not understand timezones. Defaults to UTC for /NOW keyword
+;     and TimeStamp() function
+;   * ...
+;
+; MODIFICATION HISTORY:
+; 	Written by:	Ken Mankoff, 2009.
+;	2009-09-22: Added documentation
+;	2009-09-22: Added /NOW
+;       2009-10-03: DOY is set when /NOW is used
+;
+; =============================================================
+;
+; METHODNAME:
+;   KDM_DT::TimeStamp
+;
+; PURPOSE:
+;   Return a timestamp based on the current date and time of this
+;   object. Format is: YYYY-MM-DDThh:mm:ssZ
+;
+; CALLING SEQUENCE:
+;   Result = KDM_DT -> TimeStamp()
+;
+; OUTPUTS:
+;   A string based on the current date and time of this object. 
+;   Format is: YYYY-MM-DDThh:mm:ssZ
+;
+; EXAMPLE:
+;   To get the current date and time:
+;
+;   dt = obj_new( 'kdm_dt', /now )
+;   print, dt->TimeStamp()
+;
+; =============================================================
+;
+; METHODNAME:
+;   KDM_DT::SetProperty
+;
+; PURPOSE:
+;   Set the properties of this date/time object
+;
+; CALLING SEQUENCE:
+;   Obj -> SetProperty
+;
+; KEYWORD PARAMETERS:
+;	YEAR, MONTH, STRMONTH, DAY, DOY, HOUR, MINUTE, SECOND
+;
+;   STRMONTH: The month in string format ("Sep", or "September")
+;   DAY: The day of the month.
+;   DOY: The day of year. Can be fractional
+;
+; PROCEDURE:
+;   If a keyword overwrites an existing value then all values are set
+;   to null and the object is essentially re-initialized. If an
+;   existing does not already exist then the object is modified (ex:
+;   Call once and set year to X, then call a second time and set hour
+;   to Y)
+;
+;   If any other properties can be determined from an input they are
+;   set. For example, if DOY is set to a fraction, month, day, hour,
+;   minute, and second will all be filled in.
+;  
+; EXAMPLE:
+;   To set the year of a KDM_DT object:
+;
+;   IDL> dt = obj_new( 'kdm_dt' )
+;   IDL> dt->setProperty, year=2012
+;   IDL> print, dt->TimeStamp()
+;   2012
+
+;   To set the day-of-year (fractional)
+;   IDL> dt->setProperty, doy=42.24
+;   IDL> print, dt->TimeStamp()
+;   2012-02-11T05:45:36Z
+;
+; =============================================================
+;
+; METHODNAME:
+;   KDM_DT::Init
+;
+; PURPOSE:
+;   Create and initialize a KDM_DT object
+;
+; CALLING SEQUENCE:
+;   dt = OBJ_NEW( 'kdm_dt' )
+;	
+; KEYWORD PARAMETERS:
+;	NOW: Initialize with the current date and time
+;   See SetProperty for other optional inputs
+;
+; OUTPUTS:
+;   A KDM_DT object is returned. It is initialized with default values
+;   passed in.
+;
+; PROCEDURE:
+;   Create the object. Pass _EXTRA to SetProperty.
+;
+; EXAMPLE:
+;   dt = OBJ_NEW( 'kdm_dt' )
+;   dt = OBJ_NEW( 'kdm_dt', /NOW )
+;   dt = OBJ_NEW( 'kdm_dt', YEAR=2012, monthStr='Feb', day=10, hour=13.3 )
+;
+;-
 
 
 function kdm_dt::TimeStamp
@@ -57,13 +185,16 @@ pro kdm_dt::autofill
   if self.doy eq -1 and ( self.year mod 1 NE 0 ) then $
      self.doy = (self.year mod 1) * TOTAL(MONTHDAYS(self.year,0))
 
-  ;; fill doy from year, month, and day
+  ;; fill doy from year, month, and day, and maybe hour, minute, second
   if self.doy eq -1 AND self.day ne -1 AND self.month ne -1 then begin
      if self.year ne -1 then y=self.year else begin 
         y = (bin_date(systime(0)))[0]
         ;;MESSAGE, "Using current year for leap-year calculations", /CONTINUE
      endelse
      self.doy = ymd2dn( y, self.month, self.day )
+     if self.hour ne -1 then self.doy = self.doy + self.hour/24.
+     if self.minute ne -1 then self.doy = self.doy + self.minute/(60*24.)
+     if self.second ne -1 then self.doy = self.doy + self.second/(60*60*24.)
   endif
 
   ;; fill month and/or day from DOY
@@ -74,7 +205,10 @@ pro kdm_dt::autofill
      endelse
      ;;caldat, julday(1,1,y)+doy, month, day
      ydn2md, y, ceil(self.doy), month, day
-     if self.day eq -1 then self.day = day-1+(self.doy mod 1)
+     if self.day eq -1 then begin
+        self.day = day
+        if (self.doy mod 1 ne 0) then self.day = self.day-1+(self.doy mod 1)
+     endif
      if self.month eq -1 then self.month = month
      ;; OR fill in doy from month and/or day
   endif
@@ -82,6 +216,15 @@ pro kdm_dt::autofill
   ;; fill strmonth from month?
   if self.month ne -1 AND self.strmonth eq '' THEN $
      self.strmonth = (TheMonths())[self.month-1]
+
+  ;; fill month from strmonth
+  if self.strmonth ne '' and self.month eq -1 then begin
+     self.month=where(strlowcase(theMonths(/abb)) eq strlowcase(self.strmonth))
+     if self.month eq -1 then $
+        self.month=where(strlowcase(theMonths()) eq strlowcase(self.strmonth))
+     if self.month eq -1 then MESSAGE, "Cannot determine numeric month from: "+self.strmonth
+     self.month = self.month+1
+  endif
   
   ;; fill hour from day or doy fraction
   if self.hour eq -1 AND ( (self.doy mod 1 ne 0) OR (self.day mod 1 ne 0) ) then $
@@ -128,11 +271,20 @@ pro kdm_dt::setProperty, kdm_dt_init=kdm_dt_init, _EXTRA=e
   ;;if self->getProperty(/kdm_dt_init) then 
 end
 
-function kdm_dt::init, _EXTRA=e
+function kdm_dt::init, now=now, _EXTRA=e
   if (self->kdm::init(_EXTRA=e) ne 1) then return, 0
   self->reSetProperty
   self->setProperty, kdm_dt_init=1B
-  self->setProperty, _EXTRA=e
+  if NOT keyword_set( now ) then begin
+     self->setProperty, _EXTRA=e
+  endif else begin ;; NOW
+     now = STRSPLIT( systime(/UTC), /EXTRACT )
+     t = STRSPLIT( now[3], ":", /EXTRACT )
+     self->setProperty, strmonth=now[1], day=now[2], year=now[4], $
+                        hour=t[0], minute=t[1], second=t[2]
+     self->autofill
+  endelse
+     
   return, 1
 end
 pro kdm_dt::cleanup
@@ -152,6 +304,13 @@ pro kdm_dt__define, class, _EXTRA=e
             kdm_dt_init: 0B, $
             inherits kdm }
 end
+
+help, (obj_new('kdm_dt', /now))->getProperty(/all), /st
+end
+
+;; kdm_dt testing
+;; print, (obj_new( 'kdm_dt', /NOW ))->TimeStamp()
+;; end
 
 ;;help, (obj_new('kdm_dt', doy=42))->getProperty(/all), /st
 ;print, (obj_new('kdm_dt'))->getProperty(/all)
