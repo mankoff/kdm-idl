@@ -35,6 +35,7 @@
 ;
 ; MODIFICATION HISTORY:
 ; 	Written by:	Ken Mankoff. 2005-01-10
+;               2010-02-02: Update for new monitor
 ;
 ; TODO:
 ;   Return focus to the calling window (currently, the window is created,
@@ -46,9 +47,7 @@
 pro win2, Window_Index, _EXTRA=e
 
 if ( n_elements( Window_Index ) eq 0 ) then Window_Index = 0
-window, Window_Index, xsize=1280, ysize=1002, xpos=1920, ypos=454, _EXTRA=e
+window, Window_Index, xsize=1680, ysize=1050, xpos=1920, ypos=454, _EXTRA=e
 
 end
 
-;
-; $Log$
