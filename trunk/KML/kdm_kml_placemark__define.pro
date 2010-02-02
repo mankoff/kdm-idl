@@ -1,3 +1,61 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; This object encapsulates the Placemark
+;; http://code.google.com/apis/kml/documentation/kmlreference.html#placemark
+;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; <Placemark>
+;; Syntax
+;;
+;; <Placemark id="ID">
+;;   <!-- inherited from Feature element -->
+;;   <name>...</name>                      <!-- string -->
+;;   <visibility>1</visibility>            <!-- boolean -->
+;;   <open>0</open>                        <!-- boolean -->
+;;   <atom:author>...<atom:author>         <!-- xmlns:atom -->
+;;   <atom:link>...</atom:link>            <!-- xmlns:atom -->
+;;   <address>...</address>                <!-- string -->
+;;   <xal:AddressDetails>...</xal:AddressDetails>  <!-- xmlns:xal -->
+;;   <phoneNumber>...</phoneNumber>        <!-- string -->
+;;   <Snippet maxLines="2">...</Snippet>   <!-- string -->
+;;   <description>...</description>        <!-- string -->
+;;   <AbstractView>...</AbstractView>      <!-- Camera or LookAt -->
+;;   <TimePrimitive>...</TimePrimitive>
+;;   <styleUrl>...</styleUrl>              <!-- anyURI -->
+;;   <StyleSelector>...</StyleSelector>
+;;   <Region>...</Region>
+;;   <Metadata>...</Metadata>              <!-- deprecated in KML 2.2 -->
+;;   <ExtendedData>...</ExtendedData>      <!-- new in KML 2.2 -->
+;;
+;;   <!-- specific to Placemark element -->
+;;   <Geometry>...</Geometry>
+;; </Placemark>
+;;
+;; Description
+;; A Placemark is a Feature with associated Geometry. In Google Earth,
+;; a Placemark appears as a list item in the Places panel. A Placemark
+;; with a Point has an icon associated with it that marks a point on
+;; the Earth in the 3D viewer. (In the Google Earth 3D viewer, a Point
+;; Placemark is the only object you can click or roll over. Other
+;; Geometry objects do not have an icon in the 3D viewer. To give the
+;; user something to click in the 3D viewer, you would need to create
+;; a MultiGeometry object that contains both a Point and the other
+;; Geometry object.) 
+;;
+;; Elements Specific to Placemark
+;;     * 0 or one <Geometry> elements
+;;
+;; Extends
+;;     * <Feature>
+;;
+;; Contained By
+;;     * <Document>
+;;     * <Folder>
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 pro kdm_kml_placemark::KMLhead
   self->kdm_kml_feature::KMLhead
   self->buildsource, '<Placemark id="'+self.ID+'">'
