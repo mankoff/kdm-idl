@@ -109,6 +109,13 @@ pro kdm_kml::saveKML, recursive=recursive, $
      ;;printf, lun, str
      if lun ne -1 then free_lun, lun
 
+     ;; format with xmllint
+     spawn, 'xmllint', out
+     if n_elements(out) ne 0 then begin ;; xmllint command works?
+        spawn, 'xmllint --format ' + self.filename + '>' + self.filename+'.xml'
+        spawn, 'mv ' + self.filename+'.xml ' + self.filename
+     endif
+
      ;;self->prettyprint, kml     ; save to file
      if keyword_set( kmz ) then self->kml2kmz, _EXTRA=e
      if keyword_set( openge ) AND self.filename ne '' then begin
