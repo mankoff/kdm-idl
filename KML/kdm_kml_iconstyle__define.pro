@@ -24,7 +24,10 @@ pro kdm_kml_iconstyle::KMLtail
 end
 
 pro kdm_kml_iconstyle::setProperty, color=color, _EXTRA=e
-  if keyword_set(color) then c = 'FF'+STRJOIN(to_hex( color, 2 ))
+  if keyword_set(color) then begin
+     if n_elements(color) eq 3 then cc = [255,color] else cc=color
+     c = STRJOIN(to_hex( cc, 2 ))
+  endif
   self->kdm_kml_colorstyle::setProperty, color=c, _EXTRA=e
 end
 function kdm_kml_iconstyle::init, _EXTRA=e
