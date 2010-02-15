@@ -47,7 +47,7 @@
 pro win2, Window_Index, _EXTRA=e
 
 if ( n_elements( Window_Index ) eq 0 ) then Window_Index = 0
-window, Window_Index, xsize=1680, ysize=1050, xpos=1920, ypos=454, _EXTRA=e
+window, Window_Index, xsize=1920, ysize=1200, xpos=1920, ypos=454, _EXTRA=e
 
 end
 
