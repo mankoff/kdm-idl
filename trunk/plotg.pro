@@ -1,11 +1,7 @@
-; $Id: plotg.pro,v 1.1 2007/06/07 21:04:56 mankoff Exp mankoff $
-;
-; $Author: mankoff $
-; $Revision: 1.1 $
-; $Date: 2007/06/07 21:04:56 $
-;
 
-PRO plotg, xx_in, yy_in, _EXTRA=e
+PRO plotg, xx_in, yy_in, $
+           gval=gval, $
+           _EXTRA=e
 
 ;+
 ; NAME:
@@ -14,13 +10,38 @@ PRO plotg, xx_in, yy_in, _EXTRA=e
 ; PURPOSE:
 ;   This procedure is a wrapper for the IDL plot command, that puts a
 ;   light gray grid behind the plot. It makes the plots much easier to
-;   read :)
+;   read
 ;
 ; CATEGORY:
-;   SNOE, plot
+;   plotting
+;
+; CALLING SEQUENCE:
+;   PLOTG, y
+;   PLOTG, x, y
+;
+; INPUTS:
+;	y:	A vector of data
+;
+; OPTIONAL INPUTS:
+;	x: The x value positions for the y data
+;
+; KEYWORD PARAMETERS:
+;   GVAL: The value (0 to 255) for the gray color
+;   
+;   See PLOT procedure for all other keywords
+;
+; OUTPUTS:
+;   A plot that should be identical to one produced with the PLOT
+;   command but with gray lines where the tickmajor value exist.
+;
+; SIDE EFFECTS:
+;	Creates a plot in the current device.
 ;
 ; PROCEDURE:
-;   See PLOT and SNOECT for any and all documentation
+;   1) set up the Y or X and Y arrays
+;   2) Save the existing color table
+;   3) Load a new colortable with GRAY equal to GVAL as value 254
+;   4) Plot with /NODATA, ticklen=1, and color equal 254 (GVAL)
 ;
 ; EXAMPLE:
 ;   PLOTG, indgen( 11 )
@@ -29,6 +50,7 @@ PRO plotg, xx_in, yy_in, _EXTRA=e
 ; MODIFICATION HISTORY:
 ; 	Written by: KDM; 2002-07-28
 ;       2002-08-25; KDM; grid is now 'light' even for PS
+;       2010-02-25; KDM; removed dependence on SNOEct
 ;
 ;-
 
@@ -39,46 +61,26 @@ IF ( n_elements( yy_in ) EQ 0 ) THEN BEGIN
 ENDIF ELSE yy = yy_in
 
 tvlct,rsave,gsave,bsave,/get
-snoect, /gray, _EXTRA=e
-IF ( !d.name EQ 'PS' ) THEN BEGIN
-    ;;; the gray value defaults to a low number for X-windows, where
-    ;;; 0->255 is black->white. But on PS the background is reversed,
-    ;;; so you want a mostly white background grid, not mostly black.
-    tvlct, r,g,b, /GET
-    snoect, /gray, gval=255-r[254], _EXTRA=e
-ENDIF
+
+;; set the gray value to element 254 of the colorscale
+tvlct,r,g,b, /get
+if not keyword_set(gval) then gval = 64
+r[254] = ( g[254] = ( b[254] = gval ) )
+if !d.name eq 'PS' then begin
+   r[254] = 255-r[254]
+   g[254] = 255-g[254]
+   b[254] = 255-b[254]
+endif
+tvlct,r,g,b
 
 ;;; plot the background grid in gray.
 plot, xx, yy, /NODATA, color=254, $
-  xticklen=1, yticklen=1, yminor=1, xminor=1, _EXTRA=e
+      xticklen=1, yticklen=1, yminor=1, xminor=1, _EXTRA=e
 
 ;;; re-plot the frame, ticks, and titles in the foreground color
 plot, xx, yy, /NODATA, /NOERASE, _EXTRA=e
-;;; plot the data
 if not xiastrec( e, 'nodata' ) then oplot, xx, yy, _EXTRA=e
 
 tvlct,rsave,gsave,bsave
 END
 
-;
-; $Log: plotg.pro,v $
-; Revision 1.1  2007/06/07 21:04:56  mankoff
-; Initial revision
-;
-; Revision 1.5  2002/08/27 00:39:31  mankoff
-; fixed bug with tvlct call
-;
-; Revision 1.4  2002/08/26 02:16:12  mankoff
-; fixed so grid is light-colored even in PS when there is a different background
-;
-; Revision 1.3  2002/08/19 22:33:01  mankoff
-; didn't work when both X and Y were passed in.
-;
-; Revision 1.2  2002/07/31 19:49:34  mankoff
-; fixed x/y bug
-;
-; Revision 1.1  2002/07/29 18:07:13  mankoff
-; Initial revision
-;
-;
-;
