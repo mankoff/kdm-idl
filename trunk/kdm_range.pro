@@ -60,6 +60,7 @@
 
 function kdm_range, data, $
                     from=from, to=to, $
+                    byte=byte, $
                     overflow=overflow,underflow=underflow
 
 r = CHECK_MATH(/PRINT)
@@ -83,6 +84,7 @@ if n_elements(overflow) ne 0 then begin
     if c ne 0 then range[ov] = overflow
 endif
 
+if keyword_set(byte) then range=byte(temporary(range))
 return, range
 end
 
