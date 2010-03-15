@@ -81,6 +81,10 @@ pro kdm_map_scale, x=x, y=y, $
   while abs(1-err_pct) ge err_limit do begin
      c = convert_coord( x1, y0, /norm, /to_data )
      m = map_2points( c0[0], c0[1], c[0], c[1], /meters )
+     if not finite(m) then begin
+        message, "Points not found on map", /CONTINUE
+        return
+     endif
      mm = STRTRIM( STRING(ROUND(m), FORMAT='(I100)'), 2)
 
      l = STRLEN( mm )
@@ -89,7 +93,7 @@ pro kdm_map_scale, x=x, y=y, $
      err_m = goal - m
      err_pct = goal / m
 
-     if _debug then print, m, ' ', mm, goal, err_m, err_pct
+     ;if _debug then print, m, ' ', mm, goal, err_m, err_pct
      ;; distance from c0[0] to c[0] is m meters
      ;; we want it to be km/10^3 meters
      ;; error is err_m, which is also err_pct
@@ -114,11 +118,11 @@ pro kdm_map_scale, x=x, y=y, $
   mm = STRTRIM( STRING(ROUND(m), FORMAT='(I10)'), 2)
   l = STRLEN( mm )
   goal = round(mm/(10d^(l-1)))*10d^(l-1)
-  if _debug then print, mm, goal
+  ;if _debug then print, mm, goal
 
   suffix = ([ 'm', 'km' ])[goal ge 1e3]
   scale =  ([  1., 1.e3  ])[goal ge 1e3]
-  if _debug then print, goal, suffix, scale, goal/scale
+  ;if _debug then print, goal, suffix, scale, goal/scale
   goal_str = STRTRIM( round( goal/scale), 2 ) + ' ' + suffix
   
 
