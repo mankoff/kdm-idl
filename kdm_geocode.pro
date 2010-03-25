@@ -91,7 +91,7 @@ function kdm_geocode, $
         lat_out = ( STREGEX( json, '.*:\ (.*),', /EXTRACT, /SUB ) )[1]
      IF NOT KEYWORD_SET(lng_out) AND STREGEX( json, '"lng":', /BOOL ) THEN $
         lng_out = ( STREGEX( json, '.*:\ (.*)', /EXTRACT, /SUB ) )[1]
-     IF NOT KEYWORD_SET(status) AND STREGEX( json, '"status":', /BOOL ) THEN $
+     IF STREGEX( json, '"status":', /BOOL ) THEN $
         status = ( STREGEX( json, '.*:\ "(.*)",', /EXTRACT, /SUB ) )[1]
   endwhile
   FREE_LUN, lun
