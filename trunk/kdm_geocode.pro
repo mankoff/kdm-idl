@@ -20,6 +20,7 @@
 ;   ADDRESS: A string containing an address
 ;   LATITUDE: A latitude
 ;   LONGITUDE: A longitude
+;   STATUS: The status message returned by the Google Maps API
 ;
 ;   Note that either ADDRESS OR (LATITUDE AND LONGITUDE) should be
 ;   supplied, but not all three.
@@ -53,8 +54,9 @@
 
 
 function kdm_geocode, $
-   address=addr_in, $                      ; input an address
-   latitude=lat_in, longitude=lon_in, $    ; OR input the lat AND lon coordinates
+   address=addr_in, $                   ; input an address
+   latitude=lat_in, longitude=lon_in, $ ; OR input the lat AND lon coordinates
+   status=status, $
    _EXTRA=e
   
   ;; remove spaces from address if one was provided
@@ -78,6 +80,7 @@ function kdm_geocode, $
   json = ''
   while not EOF(lun) DO begin   ; read the data from Google
      READF, lun, json
+     json_all = ARRCONCAT( json_all, json )
      ;; save three fields of interest: address, and lat,lon
      ;; reverse geocoding returns all possible values, from closest
      ;; (rooftop) to farthest (country). We only return the first, the
@@ -88,9 +91,16 @@ function kdm_geocode, $
         lat_out = ( STREGEX( json, '.*:\ (.*),', /EXTRACT, /SUB ) )[1]
      IF NOT KEYWORD_SET(lng_out) AND STREGEX( json, '"lng":', /BOOL ) THEN $
         lng_out = ( STREGEX( json, '.*:\ (.*)', /EXTRACT, /SUB ) )[1]
+     IF NOT KEYWORD_SET(status) AND STREGEX( json, '"status":', /BOOL ) THEN $
+        status = ( STREGEX( json, '.*:\ "(.*)",', /EXTRACT, /SUB ) )[1]
   endwhile
   FREE_LUN, lun
-  return, { addr:addr_out, lat:DOUBLE(lat_out), lon:DOUBLE(lng_out) }
+
+  if status eq 'OK' then $
+     return, { addr:addr_out, lat:DOUBLE(lat_out), lon:DOUBLE(lng_out) }
+
+  MESSAGE, status, /CONTINUE
+  return, { addr:'', lat:0, lon:0, status:status }
 end
 
 
@@ -99,4 +109,7 @@ print, kdm_geocode( addr='1600 Pennsylvania Avenue, Washington, DC' )
 addr = kdm_geocode( addr='225 koshlnd 95064' ) ;; typo in street, no city or state!
 help, addr.lat, addr.lon, addr.addr
 print, kdm_geocode( lat='36.989759', lon='-122.06587' )
+
+no = kdm_geocode( address="Foo Land, Somewhere", status=status )
+help, no, status
 end
