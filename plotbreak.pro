@@ -65,7 +65,7 @@ pro plotbreak, x,y, $
   pos1 = [breakloc+gap,position[1],position[2],position[3]]
 
   yrange = minmax(y)
-  yrange += 0.1*yrange
+  yrange += [-0.1,0.1]*yrange
 
   plot, x, y, $
         position=pos0, $
