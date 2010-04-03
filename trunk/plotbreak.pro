@@ -46,9 +46,10 @@ pro plotbreak, x,y, $
                gap=gap, $
                vertbar=vertbar, $
                xrange0=xrange0, xrange1=xrange1, $
-               xticks0=xticks0, xticks1=xticks1, $
-               xtickv0=xtickv0, xtickv1=xtickv1, $
-               xtickn0=xtickn0, xtickn1=xtickn1, $
+;;                xticks0=xticks0, xticks1=xticks1, $
+;;                xtickv0=xtickv0, xtickv1=xtickv1, $
+;;                xtickn0=xtickn0, xtickn1=xtickn1, $
+               key0=key0, key1=key1, $
                position=position, $
                _EXTRA=e
 
@@ -57,8 +58,8 @@ pro plotbreak, x,y, $
   breakloc = (position[2]-position[0]) * (breakpct/100.)+position[0]
   if n_elements(gap) eq 0 then gap = 0.01 ;kdm_isdefined, gap, default=0.01
 
-  if not keyword_set(xrange0) then xrange0=[0,n_elements(x)/2.]
-  if not keyword_set(xrange1) then xrange1=[n_elements(x)/2.,n_elements(x)-1]
+  if not keyword_set(xrange0) then xrange0=[0,max(x)/2.]
+  if not keyword_set(xrange1) then xrange1=[max(x)/2.,max(x)]
 
   pos0 = [position[0],position[1],breakloc-gap,position[3]]
   pos1 = [breakloc+gap,position[1],position[2],position[3]]
@@ -72,7 +73,7 @@ pro plotbreak, x,y, $
         /xst, $
         yst=9, $
         yrange=yrange, $
-        _EXTRA=e
+        _EXTRA=key0
 
   if keyword_set(vertbar) then begin
      plots, [breakloc,breakloc], [pos0[1],pos0[3]], /norm, color=254, linestyle=2, _EXTRA=e
@@ -106,9 +107,9 @@ pro plotbreak, x,y, $
         xrange=xrange1, $
         yrange=yrange, $
         yst=5, $
-        _EXTRA=e
-
-  axis, /yaxis, /yst, _EXTRA=e
+        _EXTRA=key1
+  
+  axis, /yaxis, /yst, _EXTRA=key1
 
   
 
@@ -116,9 +117,12 @@ end
 
 x = indgen(100)/100.*2*!pi
 y = sin(x)
-;plotbreak, x,y, breakpct=66, xrange0=[0,!pi], xrange1=[!pi,2*!pi], gap=0, /vertbar
-plotbreak, x,y, breakpct=66, xrange0=[0,!pi], xrange1=[!pi,2*!pi],xtitle='X', ytitle='Y'
 
+;plotbreak, x,y, breakpct=66, xrange0=[0,!pi], xrange1=[!pi,2*!pi], gap=0, /vertbar
+
+plotbreak, x,y, breakpct=66,$; xrange0=[0,!pi], xrange1=[!pi,2*!pi],$
+           key0={xtitle:'X', ytitle:'Y',title:'A Plot'}, $
+           key1={ytitle:'Also Y',color:253}
 
 ;; x = indgen(1000)
 ;; y = randomu(seed,1000)+x/250.
