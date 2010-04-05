@@ -65,7 +65,7 @@ pro plotbreak, x,y, $
   pos1 = [breakloc+gap,position[1],position[2],position[3]]
 
   yrange = minmax(y)
-  yrange += [-0.1,0.1]*yrange
+  yrange = yrange + [-0.1,0.1]*(yrange[1]-yrange[0])
 
   plot, x, y, $
         position=pos0, $
@@ -117,12 +117,11 @@ end
 
 x = indgen(100)/100.*2*!pi
 y = sin(x)
+plotbreak, x,y, breakpct=66, xrange0=[0,!pi], xrange1=[!pi,2*!pi], gap=0, /vertbar
 
-;plotbreak, x,y, breakpct=66, xrange0=[0,!pi], xrange1=[!pi,2*!pi], gap=0, /vertbar
-
-plotbreak, x,y, breakpct=66,$; xrange0=[0,!pi], xrange1=[!pi,2*!pi],$
-           key0={xtitle:'X', ytitle:'Y',title:'A Plot'}, $
-           key1={ytitle:'Also Y',color:253}
+;; plotbreak, x,y, breakpct=66,$; xrange0=[0,!pi], xrange1=[!pi,2*!pi],$
+;;            key0={xtitle:'X', ytitle:'Y',title:'A Plot'}, $
+;;            key1={ytitle:'Also Y',color:253}
 
 ;; x = indgen(1000)
 ;; y = randomu(seed,1000)+x/250.
