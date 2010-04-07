@@ -49,10 +49,10 @@ pro plotbreak, x,y, $
 ;;                xticks0=xticks0, xticks1=xticks1, $
 ;;                xtickv0=xtickv0, xtickv1=xtickv1, $
 ;;                xtickn0=xtickn0, xtickn1=xtickn1, $
-               key0=key0, key1=key1, $
+               _EXTRA_0=e0, _EXTRA_1=e1, $
                position=position, $
                _EXTRA=e
-
+  
   if not keyword_set(position) then position=[0.1,0.1,0.9,0.9]
   if not keyword_set(breakpct) then breakpct=50
   breakloc = (position[2]-position[0]) * (breakpct/100.)+position[0]
@@ -73,7 +73,7 @@ pro plotbreak, x,y, $
         /xst, $
         yst=9, $
         yrange=yrange, $
-        _EXTRA=key0
+        _EXTRA=e0
 
   if keyword_set(vertbar) then begin
      plots, [breakloc,breakloc], [pos0[1],pos0[3]], /norm, color=254, linestyle=2, _EXTRA=e
@@ -107,9 +107,9 @@ pro plotbreak, x,y, $
         xrange=xrange1, $
         yrange=yrange, $
         yst=5, $
-        _EXTRA=key1
+        _EXTRA=e1
   
-  axis, /yaxis, /yst, _EXTRA=key1
+  axis, /yaxis, /yst, _EXTRA=e1
 
   
 
@@ -119,9 +119,9 @@ x = indgen(100)/100.*2*!pi
 y = sin(x)
 plotbreak, x,y, breakpct=66, xrange0=[0,!pi], xrange1=[!pi,2*!pi], gap=0, /vertbar
 
-;; plotbreak, x,y, breakpct=66,$; xrange0=[0,!pi], xrange1=[!pi,2*!pi],$
-;;            key0={xtitle:'X', ytitle:'Y',title:'A Plot'}, $
-;;            key1={ytitle:'Also Y',color:253}
+plotbreak, x,y, breakpct=66,$; xrange0=[0,!pi], xrange1=[!pi,2*!pi],$
+           _EXTRA_0={xtitle:'X', ytitle:'Y',title:'A Plot'}, $
+           _EXTRA_1={ytitle:'Also Y',color:253}
 
 ;; x = indgen(1000)
 ;; y = randomu(seed,1000)+x/250.
