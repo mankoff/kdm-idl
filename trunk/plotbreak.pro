@@ -46,11 +46,9 @@ pro plotbreak, x,y, $
                gap=gap, $
                vertbar=vertbar, $
                xrange0=xrange0, xrange1=xrange1, $
-;;                xticks0=xticks0, xticks1=xticks1, $
-;;                xtickv0=xtickv0, xtickv1=xtickv1, $
-;;                xtickn0=xtickn0, xtickn1=xtickn1, $
-               _EXTRA_0=e0, _EXTRA_1=e1, $
+               title=title, xtitle=xtitle, $
                position=position, $
+               _EXTRA_0=e0, _EXTRA_1=e1, $
                _EXTRA=e
   
   if not keyword_set(position) then position=[0.1,0.1,0.9,0.9]
@@ -76,27 +74,35 @@ pro plotbreak, x,y, $
         _EXTRA=e0
 
   if keyword_set(vertbar) then begin
-     plots, [breakloc,breakloc], [pos0[1],pos0[3]], /norm, color=254, linestyle=2, _EXTRA=e
+     plots, [breakloc,breakloc], [pos0[1],pos0[3]], $
+            /norm, color=254, linestyle=2, _EXTRA=e
   endif
 
   if not keyword_set( slashScaleV ) then slashScaleV = 2.5
   if not keyword_set( slashScaleH ) then slashScaleH = 0.5
-
   ;; bottom left
-  slashL = convert_coord( pos0[2]-gap*slashScaleH, pos0[1]-gap*slashScaleV, /norm, /to_data )
-  slashR = convert_coord( pos0[2]+gap*slashScaleH, pos0[1]+gap*slashScaleV, /norm, /to_data )
+  slashL = convert_coord( pos0[2]-gap*slashScaleH, $
+                          pos0[1]-gap*slashScaleV, /norm, /to_data )
+  slashR = convert_coord( pos0[2]+gap*slashScaleH, $
+                          pos0[1]+gap*slashScaleV, /norm, /to_data )
   plots, [slashL[0],slashR[0]], [slashL[1],slashR[1]]
   ;; bottom right
-  slashL = convert_coord( pos0[2]-gap*slashScaleH+(2*gap), pos0[1]-gap*slashScaleV, /norm, /to_data )
-  slashR = convert_coord( pos0[2]+gap*slashScaleH+(2*gap), pos0[1]+gap*slashScaleV, /norm, /to_data )
+  slashL = convert_coord( pos0[2]-gap*slashScaleH+(2*gap), $
+                          pos0[1]-gap*slashScaleV, /norm, /to_data )
+  slashR = convert_coord( pos0[2]+gap*slashScaleH+(2*gap), $
+                          pos0[1]+gap*slashScaleV, /norm, /to_data )
   plots, [slashL[0],slashR[0]], [slashL[1],slashR[1]]
   ;; top left
-  slashL = convert_coord( pos0[2]-gap*slashScaleH, pos0[3]-gap*slashScaleV, /norm, /to_data )
-  slashR = convert_coord( pos0[2]+gap*slashScaleH, pos0[3]+gap*slashScaleV, /norm, /to_data )
+  slashL = convert_coord( pos0[2]-gap*slashScaleH, $
+                          pos0[3]-gap*slashScaleV, /norm, /to_data )
+  slashR = convert_coord( pos0[2]+gap*slashScaleH, $
+                          pos0[3]+gap*slashScaleV, /norm, /to_data )
   plots, [slashL[0],slashR[0]], [slashL[1],slashR[1]]
   ;; top right
-  slashL = convert_coord( pos0[2]-gap*slashScaleH+(2*gap), pos0[3]-gap*slashScaleV, /norm, /to_data )
-  slashR = convert_coord( pos0[2]+gap*slashScaleH+(2*gap), pos0[3]+gap*slashScaleV, /norm, /to_data )
+  slashL = convert_coord( pos0[2]-gap*slashScaleH+(2*gap), $
+                          pos0[3]-gap*slashScaleV, /norm, /to_data )
+  slashR = convert_coord( pos0[2]+gap*slashScaleH+(2*gap), $
+                          pos0[3]+gap*slashScaleV, /norm, /to_data )
   plots, [slashL[0],slashR[0]], [slashL[1],slashR[1]]
 
   
@@ -111,17 +117,31 @@ pro plotbreak, x,y, $
   
   axis, /yaxis, /yst, _EXTRA=e1
 
-  
+  ;; title and xtitle
+  if keyword_set(title) then $
+     xyouts, (position[2]+position[0])/2., $ ; X
+             ;position[3] + (position[1]+position[3])*.035, $
+             position[3] + 0.02, $
+             charsize=1.3, $
+             title, _EXTRA=e, /norm, align=0.5
 
+  if keyword_set(xtitle) then $
+     xyouts, (position[2]+position[0])/2., $ ; X
+             position[1] - 0.055, $
+             xtitle, _EXTRA=e, /norm, align=0.5
+  
 end
 
 x = indgen(100)/100.*2*!pi
 y = sin(x)
-plotbreak, x,y, breakpct=66, xrange0=[0,!pi], xrange1=[!pi,2*!pi], gap=0, /vertbar
+plotbreak, x,y, breakpct=66, xrange0=[0,!pi], $
+           xrange1=[!pi,2*!pi], gap=0, /vertbar, title='Sine Wave'
 
 plotbreak, x,y, breakpct=66,$; xrange0=[0,!pi], xrange1=[!pi,2*!pi],$
-           _EXTRA_0={xtitle:'X', ytitle:'Y',title:'A Plot'}, $
-           _EXTRA_1={ytitle:'Also Y',color:253}
+           _EXTRA_0={xtitle:'X', ytitle:'Y',title:'Foo'}, $
+           _EXTRA_1={ytitle:'Also Y',color:253}, $
+           title='0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15', $
+           xtitle='The X Title Goes Here'
 
 ;; x = indgen(1000)
 ;; y = randomu(seed,1000)+x/250.
