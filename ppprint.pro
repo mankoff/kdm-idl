@@ -1,7 +1,7 @@
 ;+
 ;
 ; NAME:
-;	PRINTARR
+;	PPPRINT
 ;
 ; PURPOSE:
 ;   Pretty print arrays.
@@ -10,7 +10,7 @@
 ;	Misc, Arrays, Console
 ;
 ; CALLING SEQUENCE:
-;   PRINTARR, array
+;   PPPRINT, array
 ; INPUTS:
 ;	Array: An array. Should work with any basic type. Not sure (yet)
 ;          how to handler arrays of pointers or objects or structures.
@@ -32,19 +32,19 @@
 ;   http://groups.google.com/group/comp.lang.idl-pvwave/msg/013a8314ce6dcef5
 ;
 ; EXAMPLE:
-;   printarr, [2e3,3.5e-3]
-;   printarr, [2e3,3.5e-3], /power
-;   printarr, indgen(10)
-;   printarr, indgen(10)+998
-;   printarr, ['a','b','c']
-;   printarr, ['goodbye','cruel','world']
+;   ppprint, [2e3,3.5e-3]
+;   ppprint, [2e3,3.5e-3], /power
+;   ppprint, indgen(10)
+;   ppprint, indgen(10)+998
+;   ppprint, ['a','b','c']
+;   ppprint, ['goodbye','cruel','world']
 ;
 ; MODIFICATION HISTORY:
 ; 	Written by:	Ken Mankoff, 2010-04-13
 ;
 ;-
 
-pro printarr, arr, format=format, power=power
+pro ppprint, arr, format=format, power=power
   
   if not keyword_set(format) then begin
      type = size(arr,/tname)
@@ -69,10 +69,10 @@ pro printarr, arr, format=format, power=power
 end
 
 ;; testing code
-printarr, [2e3,3.5e-3]
-printarr, [2e3,3.5e-3], /power
-printarr, indgen(10)
-printarr, indgen(10)+998
-printarr, ['a','b','c']
-printarr, ['goodbye','cruel','world']
+ppprint, [2e3,3.5e-3]
+ppprint, [2e3,3.5e-3], /power
+ppprint, indgen(10)
+ppprint, indgen(10)+998
+ppprint, ['a','b','c']
+ppprint, ['goodbye','cruel','world']
 end
