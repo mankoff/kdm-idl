@@ -55,14 +55,14 @@
 ;
 ; MODIFICATION HISTORY:
 ; 	Written by:	Ken Mankoff, 2010-03
+;               2010-04-18: Provide type hint. Allow empty strings to
+;                           default to default input if supplied.
 ;
 ;-
 
 pro kdm_isdefined, var, $
                    default=default, $
                    prompt=prompt, $
-                   ;;defined=defined, $
-                   ;;undefined=undefined, $
                    _EXTRA=e
 
   undefined = n_elements( var ) eq 0
@@ -76,17 +76,23 @@ pro kdm_isdefined, var, $
      ;; type? If default is defined, obviously of that type. If
      ;; default is not defined, we'll default to a string,
      ;; because that can hold most other types.
-     if n_elements(default) ne 0 then begin
-        var = default
-        default_type = size( var, /tname)
-     endif else begin
-        var = ''
-        default_type = size( var, /tname)
-     endelse 
+
+     if n_elements(default) eq 0 then default = ''
+     var = ''
+     default_type = size( default, /tname)
+
+     ;; The input is always of type string, then
+     ;; cast to the correct type. This allows you to enter nothing
+     ;; (just hit return) and the default value will be
+     ;; used. Doesn't work for strings if you *want* a string
+     ;; to be null but the PROMPT is non-null...
 
      ;; give a hint of what type to expect
-     pp = '['+default_type+'] '+prompt
+     pp = '['+default_type+':'+STRTRIM(default,2)+'] '+prompt
      read, var, prompt=pp, _EXTRA=e
+     if var eq '' then var = default
+     tmp = default
+     var[0] = tmp
   endif
 
 end
