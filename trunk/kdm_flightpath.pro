@@ -6,6 +6,8 @@ function kdm_flightpath, $
   ;; maximum possible distance between two points
   ;; maxD = distance_sphere( 90,0,-90,0 )*1e3 ; [m] 
 
+  n = 100
+
   ;; Distance between two endpoints
   dist = distance_sphere( lat0,lon0,lat1,lon1 )*1e3
   maxAlt = dist / 10 ;; a reasonable value for the top of the arch.
