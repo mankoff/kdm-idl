@@ -264,7 +264,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 pro kdm_kml_feature::KMLhead
-  self->buildsource, '<!-- Feature id="'+self.ID+'" -->'
+  ;;self->buildsource, '<!-- Feature id="'+self.ID+'" -->'
 end
 pro kdm_kml_feature::KMLbody
   if self.name ne '' then self->buildsource, self->xmlTag("name",self.name)
@@ -278,7 +278,7 @@ pro kdm_kml_feature::KMLbody
   endelse
 end
 pro kdm_kml_feature::KMLtail
-  self->buildsource, '<!-- /Feature -->'
+  ;;self->buildsource, '<!-- /Feature -->'
 end
 
 function kdm_kml_feature::init, _EXTRA=e
