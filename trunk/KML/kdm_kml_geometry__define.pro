@@ -1,12 +1,12 @@
 pro kdm_kml_geometry::KMLhead
-  self->buildsource, '<!-- Geometry id="'+self.ID+'" -->'
+  ;;self->buildsource, '<!-- Geometry id="'+self.ID+'" -->'
   ;kdm_callstack
 end
 ;; pro kdm_kml_geometry::KMLbody, kml=kml
 ;;   ;; 
 ;; end
 pro kdm_kml_geometry::KMLtail
-  self->buildsource, '<!-- /Geometry -->'
+  ;;self->buildsource, '<!-- /Geometry -->'
 end
 
 function kdm_kml_geometry::init, _EXTRA=e

@@ -169,7 +169,7 @@ pro kdm_kml::KMLhead
   self->buildsource, ' xmlns:gx="http://www.google.com/kml/ext/2.2">'
 end
 pro kdm_kml::KMLbody
-  self->buildsource, "<!-- Top Level Body -->"
+  ;;self->buildsource, "<!-- Top Level Body -->"
 end
 pro kdm_kml::KMLtail
   self->buildsource, '</kml>'

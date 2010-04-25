@@ -1,13 +1,13 @@
 pro kdm_kml_container::KMLhead
   self->kdm_kml_feature::KMLhead
-  self->buildsource, '<!-- Container -->'
+  ;;self->buildsource, '<!-- Container -->'
 end
 pro kdm_kml_container::KMLbody
   self->kdm_kml_feature::KMLbody
-  self->buildsource, "<!-- Container Body -->"
+  ;;self->buildsource, "<!-- Container Body -->"
 end
 pro kdm_kml_container::KMLtail
-  self->buildsource, '<!-- /Container -->'
+  ;;self->buildsource, '<!-- /Container -->'
   self->kdm_kml_feature::KMLtail
 end
 

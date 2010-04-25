@@ -1,6 +1,6 @@
 pro kdm_kml_folder::KMLhead
   self->kdm_kml_container::KMLhead
-  self->buildsource, '<!-- Folder -->'
+  ;;self->buildsource, '<!-- Folder -->'
   self->buildsource, '<Folder id="'+self.ID+'">'
 end
 pro kdm_kml_folder::KMLbody
@@ -9,7 +9,7 @@ pro kdm_kml_folder::KMLbody
 end
 pro kdm_kml_folder::KMLtail
   self->buildsource, '</Folder>'
-  self->buildsource, '<!-- /Folder -->'
+  ;;self->buildsource, '<!-- /Folder -->'
   self->kdm_kml_container::KMLtail
 end
 

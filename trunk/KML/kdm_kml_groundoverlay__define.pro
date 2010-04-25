@@ -4,7 +4,7 @@ pro kdm_kml_groundoverlay::KMLhead
 end
 pro kdm_kml_groundoverlay::KMLbody
   self->kdm_kml_overlay::KMLbody
-  self->buildsource, "<!-- Groundoverlay Body -->"
+  ;;self->buildsource, "<!-- Groundoverlay Body -->"
   
   self->buildsource, self->xmlTag( 'altitude', self.altitude )
   self->buildsource, self->xmlTag( 'altitudeMode', self.x_altitudemode )
