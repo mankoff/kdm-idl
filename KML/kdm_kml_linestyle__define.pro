@@ -50,6 +50,7 @@ end
 
 function kdm_kml_linestyle::init, _EXTRA=e
   if self->kdm_kml_colorstyle::init(_EXTRA=e) ne 1 then return, 0
+  self->setProperty, width=1
   self->setProperty, _EXTRA=e
   return, 1
 end
