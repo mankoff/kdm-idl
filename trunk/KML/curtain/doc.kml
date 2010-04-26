@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Folder>
+<Placemark>
+	<name>CurtainTest</name>
+	<Style id="default">
+	</Style>
+	<Model id="curtain_model_N">
+		<altitudeMode>absolute</altitudeMode>
+		<Location>
+			<longitude>0</longitude>
+			<latitude>0</latitude>
+			<altitude>0</altitude>
+		</Location>
+		<Orientation>
+			<heading>90</heading>
+			<tilt>0</tilt>
+			<roll>0</roll>
+		</Orientation>
+		<Scale>
+			<x>1</x>
+			<y>1</y>
+			<z>1</z>
+		</Scale>
+		<Link>
+			<href>files/curtain.dae</href>
+		</Link>
+		<ResourceMap>
+			<Alias>
+				<targetHref>curtain.png</targetHref>
+				<sourceHref>../images/curtain.png</sourceHref>
+			</Alias>
+		</ResourceMap>
+	</Model>
+</Placemark>
+</Folder>
+</kml>
