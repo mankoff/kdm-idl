@@ -90,9 +90,11 @@ pro kdm_isdefined, var, $
      ;; give a hint of what type to expect
      pp = '['+default_type+':'+STRTRIM(default,2)+'] '+prompt
      read, var, prompt=pp, _EXTRA=e
-     if var eq '' then var = default
-     tmp = default
-     var[0] = tmp
+
+     ;; var contains the data and is type string. Need to convert to
+     ;; the correct type, which is the the default variable.
+     default[0] = var
+     var = default
   endif
 
 end
@@ -102,6 +104,7 @@ end
 ;; kdm_isdefined, x, default='foo'
 ;; help, x
 ;; kdm_isdefined, x, prompt='Enter something: '
+;; help, x
 
 ;; undefine, x
 ;; kdm_isdefined, x, default='foo'
@@ -114,4 +117,4 @@ end
 ;; undefine, x
 ;; kdm_isdefined, x, prompt='Enter something: ', default=BYTE(42)
 ;; help, x
-;; end
+end
