@@ -18,9 +18,9 @@
 			<roll>0</roll>
 		</Orientation>
 		<Scale>
-			<x>1</x>
-			<y>1</y>
-			<z>1</z>
+			<x>1000000</x>
+			<y>1000000</y>
+			<z>1000000</z>
 		</Scale>
 		<Link>
 			<href>files/curtain.dae</href>
