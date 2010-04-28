@@ -9,26 +9,26 @@
       <up_axis>Z_UP</up_axis>
    </asset>
 	   <library_images>
-      <image id="cloudsat_data-image" name="cloudsat_data-image">
+      <image id="kdm-kml_curtain-image" name="kdm-kml_curtain-image">
 	         <init_from>../images/curtain.png</init_from>
       </image>
    </library_images>
       <library_materials>
-      <material id="cloudsat_dataID" name="cloudsat_data">
-         <instance_effect url="#cloudsat_data-effect"/>
+      <material id="kdm-kml_curtainID" name="kdm-kml_curtain">
+         <instance_effect url="#kdm-kml_curtain-effect"/>
       </material>
    </library_materials>
    <library_effects>
-      <effect id="cloudsat_data-effect" name="cloudsat_data-effect">
+      <effect id="kdm-kml_curtain-effect" name="kdm-kml_curtain-effect">
          <profile_COMMON>
-            <newparam sid="cloudsat_data-image-surface">
+            <newparam sid="kdm-kml_curtain-image-surface">
                <surface type="2D">
-                  <init_from>cloudsat_data-image</init_from>
+                  <init_from>kdm-kml_curtain-image</init_from>
                </surface>
             </newparam>
-            <newparam sid="cloudsat_data-image-sampler">
+            <newparam sid="kdm-kml_curtain-image-sampler">
                <sampler2D>
-                  <source>cloudsat_data-image-surface</source>
+                  <source>kdm-kml_curtain-image-surface</source>
                </sampler2D>
             </newparam>
             <technique sid="COMMON">
@@ -40,7 +40,7 @@
                      <color>0.000000 0.000000 0.000000 1</color>
                   </ambient>
                   <diffuse>
-                     <texture texture="cloudsat_data-image-sampler" texcoord="UVSET0"/>
+                     <texture texture="kdm-kml_curtain-image-sampler" texcoord="UVSET0"/>
                   </diffuse>
                   <specular>
                      <color>0.000000 0.000000 0.000000 1</color>
@@ -106,7 +106,7 @@
             <vertices id="mesh1-geometry-vertex">
                <input semantic="POSITION" source="#mesh1-geometry-position"/>
             </vertices>
-            <triangles material="cloudsat_data" count="4">
+            <triangles material="kdm-kml_curtain" count="4">
                <input semantic="VERTEX" source="#mesh1-geometry-vertex" offset="0"/>
                <input semantic="NORMAL" source="#mesh1-geometry-normal" offset="1"/>
                <input semantic="TEXCOORD" source="#mesh1-geometry-uv" offset="2" set="0"/>
@@ -122,7 +122,7 @@
                <instance_geometry url="#mesh1-geometry">
                   <bind_material>
                      <technique_common>
-                        <instance_material symbol="cloudsat_data" target="#cloudsat_dataID">
+                        <instance_material symbol="kdm-kml_curtain" target="#kdm-kml_curtainID">
                            <bind_vertex_input semantic="UVSET0" input_semantic="TEXCOORD" input_set="0"/>
                         </instance_material>
                      </technique_common>
