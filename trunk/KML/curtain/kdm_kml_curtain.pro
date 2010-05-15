@@ -46,6 +46,7 @@ pro kdm_kml_curtain, $
    top_altitude=top_altitude, $                  ; height
    image=image, $
    file=file, $                 ; output KML file
+   openGE=openGE, $             ; launch file in GE once created?
    _EXTRA=e
 
   ;; require inputs
@@ -58,8 +59,8 @@ pro kdm_kml_curtain, $
   kdm_isdefined, file, default='curtain.kmz'
 
   ps = path_sep()
+
   folder0 = file+'.zipme'
-  cmd = 'rm -fR ' + folder0 & spawn, cmd
   folder1 = folder0 + ps + "files"
   file_mkdir, folder0 & file_mkdir, folder1
 
@@ -105,27 +106,44 @@ pro kdm_kml_curtain, $
   free_lun, lun
 
   ;file_copy, template+ps+'files'+ps+'curtain.dae', folder1
-  file_copy, image, folder1+ps+'curtain.png'
+  file_copy, image, folder1+ps+'curtain.png', /OVERWRITE
 
   cd, folder0, cur=cwd
-  spawn, 'zip -r ../' + file + ' .'
+  spawn, 'zip -r ../' + file + ' .', capture_output
   cd, cwd
-  spawn, 'open '+file
+  if keyword_set(openGE) then spawn, 'open '+file
+
+  ;; Clean Up
+  if folder0 eq '' OR folder0 eq "/" then stop ;; A bit of safety?
+  file_delete, folder0+ps+'doc.kml'
+  file_delete, folder0+ps+'files'+ps+'*'
+  file_delete, folder0+ps+'files'+ps+'*'
+  file_delete, folder0+ps+'files'
+  file_delete, folder0
+
 end
 
 
 pro kdm_kml_curtain_test
-  for ll = 0, 80, 5 do begin
-     f = STRTRIM(ll,2)+'.kmz'
-     kdm_kml_curtain, $
-        lat0=ll, lon0=0, $
-        lat1=ll+5, lon1=0, $
-        top=1e6, $
-        file=f, $
-        image='/Users/mankoff/local/IDL_lib/kdm-idl/trunk/KML/curtain/files/curtain.png', $
-        _EXTRA=e
-     wait, 0.1
-  endfor
+  kdm_kml_curtain, $
+     lat0=0, lon0=0, $
+     lat1=10, lon1=0, $
+     top=1e6, $
+     file=f, $
+     image='/Users/mankoff/local/IDL_lib/kdm-idl/trunk/KML/curtain/files/curtain.png', $
+     _EXTRA=e
+
+;;   for ll = 0, 80, 5 do begin
+;;      f = STRTRIM(ll,2)+'.kmz'
+;;      kdm_kml_curtain, $
+;;         lat0=ll, lon0=0, $
+;;         lat1=ll+5, lon1=0, $
+;;         top=1e6, $
+;;         file=f, $
+;;         image='/Users/mankoff/local/IDL_lib/kdm-idl/trunk/KML/curtain/files/curtain.png', $
+;;         _EXTRA=e
+;;      wait, 0.1
+;;   endfor
 end
 
 kdm_kml_curtain_test
