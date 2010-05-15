@@ -1,9 +1,3 @@
-; $Id: file_uniq.pro,v 1.2 2002/09/02 02:58:22 mankoff Exp $
-;
-; $Author: mankoff $
-; $Revision: 1.2 $
-; $Date: 2002/09/02 02:58:22 $
-;
 
 FUNCTION FILE_UNIQ
 
@@ -60,6 +54,7 @@ FUNCTION FILE_UNIQ
 ; MODIFICATION HISTORY:
 ; 	Written by: KDM; 2002-08-29
 ;   2002-09-01; KDM; Changed help call to use CALLS rather than /TRACEBACK
+;   2010-05-14; KDM; Improved to detect folders not just files.
 ;
 ;-
 
@@ -76,18 +71,11 @@ n = -1
 REPEAT BEGIN
     n = n + 1
     file = pre + STRING( n, FORMAT='(I4.4)', /PRINT )
-    f = findfile( file+'.*', count=count )
-ENDREP UNTIL ( count EQ 0 )
+    ;f = findfile( file+'.*', count=count )
+    openr, lun, file, /get_lun, err=err
+    if keyword_set( lun ) then free_lun, lun
+ENDREP UNTIL ( err eq -247 ) ; no such file or directory
 return, file
 
 END
 
-;
-; $Log: file_uniq.pro,v $
-; Revision 1.2  2002/09/02 02:58:22  mankoff
-; help now uses CALLS= rather than /TRACEBACK with output caputure b/c
-; its easier to parse
-;
-; Revision 1.1  2002/08/29 23:20:22  mankoff
-; Initial revision
-;
