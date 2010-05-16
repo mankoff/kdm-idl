@@ -5,6 +5,151 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
+;; <Model>
+;; Syntax
+;;
+;; <Model id="ID">
+;;   <!-- specific to Model -->
+;;   <altitudeMode>clampToGround</altitudeMode> 
+;;       <!-- kml:altitudeModeEnum: clampToGround,relativeToGround,or absolute -->
+;;       <!-- or, substitute gx:altitudeMode: clampToSeaFloor, relativeToSeaFloor -->
+;;   <Location> 
+;;     <longitude></longitude> <!-- kml:angle180 -->
+;;     <latitude></latitude>   <!-- kml:angle90 -->  
+;;     <altitude>0</altitude>  <!-- double --> 
+;;   </Location> 
+;;   <Orientation>               
+;;     <heading>0</heading>    <!-- kml:angle360 -->
+;;     <tilt>0</tilt>          <!-- kml:angle360 -->
+;;     <roll>0</roll>          <!-- kml:angle360 -->
+;;   </Orientation> 
+;;   <Scale> 
+;;     <x>1</x>                <!-- double -->
+;;     <y>1</y>                <!-- double -->
+;;     <z>1</z>                <!-- double -->
+;;   </Scale> 
+;;   <Link>...</Link>
+;;   <ResourceMap>
+;;     <Alias>
+;;       <targetHref>...</targetHref>   <!-- anyURI -->
+;;       <sourceHref>...</sourceHref>   <!-- anyURI -->
+;;     </Alias>
+;;   </ResourceMap>
+;; </Model>
+;;
+;; Description
+;; A 3D object described in a COLLADA file (referenced in the <Link>
+;; tag). COLLADA files have a .dae file extension. Models are created
+;; in their own coordinate space and then located, positioned, and
+;; scaled in Google Earth. See the "Topics in KML" page on Regions for
+;; more detail. 
+;;
+;; Google Earth supports the COLLADA common profile, with the
+;; following exceptions: 
+;;     * Google Earth supports only triangles and lines as primitive
+;;       types. The maximum number of triangles allowed is 21845. 
+;;     * Google Earth does not support animation or skinning.
+;;     * Google Earth does not support external geometry references.
+;;
+;; Elements Specific to Model
+;; <altitudeMode>
+;;     Specifies how the <altitude> specified in <Location> is
+;;     interpreted. Possible values are as follows: 
+;;         * clampToGround - (default) Indicates to ignore the
+;;           <altitude> specification and place the Model on the
+;;           ground. 
+;;         * relativeToGround - Interprets the <altitude> as a value
+;;                              in meters above the ground. 
+;;         * absolute - Interprets the <altitude> as a value in meters
+;;                      above sea level. 
+;; <Location>
+;;     Specifies the exact coordinates of the Model's origin in
+;;     latitude, longitude, and altitude. Latitude and longitude
+;;     measurements are standard lat-lon projection with WGS84
+;;     datum. Altitude is distance above the earth's surface, in
+;;     meters, and is interpreted according to <altitudeMode> or
+;;     <gx:altitudeMode>. 
+;;     <Location>
+;;       <longitude>39.55375305703105</longitude>  
+;;       <latitude>-118.9813220168456</latitude> 
+;;       <altitude>1223</altitude> 
+;;     </Location> 
+;;
+;; <Orientation>
+;;     Describes rotation of a 3D model's coordinate system to
+;;     position the object in Google Earth. See diagrams below. 
+;;     <Orientation> 
+;;       <heading>45.0</heading> 
+;;       <tilt>10.0</tilt> 
+;;       <roll>0.0</roll> 
+;;     </Orientation> 
+;;
+;;     Rotations are applied to a Model in the following order:
+;;        1. <roll>
+;;        2. <tilt>
+;;        3. <heading>
+;;
+;;     <heading>
+;;         Rotation about the z axis (normal to the Earth's
+;;         surface). A value of 0 (the default) equals North. A
+;;         positive rotation is clockwise around the z axis and
+;;         specified in degrees from 0 to 360. 
+;;     <tilt>
+;;         Rotation about the x axis. A positive rotation is clockwise
+;;         around the x axis and specified in degrees from 0 to 360. 
+;;     <roll>
+;;         Rotation about the y axis. A positive rotation is clockwise
+;;         around the y axis and specified in degrees from 0 to 360. 
+;;         heading, tilt, and roll are specified in a clockwise
+;;         direction when looking down the axis toward the origin 
+;; <Scale>
+;;     Scales a model along the x, y, and z axes in the model's coordinate space.
+;;     <Scale>
+;;       <x>1</x>
+;;       <y>1</y>
+;;       <z>1</z>
+;;     </Scale>
+;;
+;; <Link>
+;;     Specifies the file to load and optional refresh parameters. See
+;;     <Link>. 
+;; <ResourceMap>
+;;     Specifies 0 or more <Alias> elements, each of which is a
+;;     mapping for the texture file path from the original Collada
+;;     file to the KML or KMZ file that contains the Model. This
+;;     element allows you to move and rename texture files without
+;;     having to update the original Collada file that references
+;;     those textures. One <ResourceMap> element can contain multiple
+;;     mappings from different (source) Collada files into the same
+;;     (target) KMZ file. 
+;;
+;; <Alias> contains a mapping from a <sourceHref> to a <targetHref>:
+;;     <targetHref>
+;;         Specifies the texture file to be fetched by Google
+;;         Earth. This reference can be a relative reference to an
+;;         image file within the .kmz archive, or it can be an
+;;         absolute reference to the file (for example, a URL).  
+;;     <sourceHref>
+;;         Is the path specified for the texture file in the Collada
+;;         .dae file. 
+;;
+;;     In Google Earth, if this mapping is not supplied, the following
+;;     rules are used to locate the textures referenced in the Collada
+;;     (.dae) file: 
+;;
+;;         * No path: If the texture name does not include a path,
+;;         Google Earth looks for the texture in the same directory as
+;;         the .dae file that references it. 
+;;         * Relative path: If the texture name includes a relative
+;;         path (for example, ../images/mytexture.jpg), Google Earth
+;;         interprets the path as being relative to the .dae file that
+;;         references it. 
+;;         * Absolute path: If the texture name is an absolute path
+;;         (c:\mytexture.jpg) or a network path (for example,
+;;         http://myserver.com/mytexture.jpg), Google Earth looks for
+;;         the file in the specified location, regardless of where the
+;;         .dae file is located. 
+;;
 ;; Extends
 ;;     * <Geometry>
 ;;
@@ -15,9 +160,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; This helper function just returns a basic DAE (3D Google SketchUp
+;; Model) file as an array of strings. The points that need to be
+;; changed for vertical curtain data in GE are highlighted as BLBL for
+;; the bottom left corner, BRBR, TLTL, TRTR, and HHHL,HHHR (for the
+;; height of the left and right edge. This string array is then passed
+;; through 'kdm_kml_vertical_repstr' to replace those keywords with the
+;; desired values.
+;;
+;; Users should not call this function directly.
+;;
 function kdm_kml_vertical_dae
-  foo = [ ['aoeu'], $
-          ['boeu'] ]
   dae = [ ['<?xml version="1.0" encoding="utf-8"?>'], $
           [ '<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">'], $
           [ '		  <asset>'], $
@@ -28,26 +185,26 @@ function kdm_kml_vertical_dae
           [ '      <up_axis>Z_UP</up_axis>'], $
           [ '   </asset>'], $
           [ '	   <library_images>'], $
-          [ '      <image id="kdm-kml_curtain-image" name="kdm-kml_curtain-image">'], $
-          [ '	         <init_from>../images/curtain.png</init_from>'], $
+          [ '      <image id="kdm-kml_vertical-image" name="kdm-kml_vertical-image">'], $
+          [ '	         <init_from>../images/IMAGE.PNG</init_from>'], $
           [ '      </image>'], $
           [ '   </library_images>'], $
           [ '      <library_materials>'], $
-          [ '      <material id="kdm-kml_curtainID" name="kdm-kml_curtain">'], $
-          [ '         <instance_effect url="#kdm-kml_curtain-effect"/>'], $
+          [ '      <material id="kdm-kml_verticalID" name="kdm-kml_vertical">'], $
+          [ '         <instance_effect url="#kdm-kml_vertical-effect"/>'], $
           [ '      </material>'], $
           [ '   </library_materials>'], $
           [ '   <library_effects>'], $
-          [ '      <effect id="kdm-kml_curtain-effect" name="kdm-kml_curtain-effect">'], $
+          [ '      <effect id="kdm-kml_vertical-effect" name="kdm-kml_vertical-effect">'], $
           [ '         <profile_COMMON>'], $
-          [ '            <newparam sid="kdm-kml_curtain-image-surface">'], $
+          [ '            <newparam sid="kdm-kml_vertical-image-surface">'], $
           [ '               <surface type="2D">'], $
-          [ '                  <init_from>kdm-kml_curtain-image</init_from>'], $
+          [ '                  <init_from>kdm-kml_vertical-image</init_from>'], $
           [ '               </surface>'], $
           [ '            </newparam>'], $
-          [ '            <newparam sid="kdm-kml_curtain-image-sampler">'], $
+          [ '            <newparam sid="kdm-kml_vertical-image-sampler">'], $
           [ '               <sampler2D>'], $
-          [ '                  <source>kdm-kml_curtain-image-surface</source>'], $
+          [ '                  <source>kdm-kml_vertical-image-surface</source>'], $
           [ '               </sampler2D>'], $
           [ '            </newparam>'], $
           [ '            <technique sid="COMMON"> '], $
@@ -59,7 +216,7 @@ function kdm_kml_vertical_dae
           [ '                     <color>0.000000 0.000000 0.000000 1</color>'], $
           [ '                  </ambient>'], $
           [ '                  <diffuse>'], $
-          [ '                     <texture texture="kdm-kml_curtain-image-sampler" texcoord="UVSET0"/>'], $
+          [ '                     <texture texture="kdm-kml_vertical-image-sampler" texcoord="UVSET0"/>'], $
           [ '                  </diffuse>'], $
           [ '                  <specular>'], $
           [ '                     <color>0.000000 0.000000 0.000000 1</color>'], $
@@ -126,7 +283,7 @@ function kdm_kml_vertical_dae
           [ '            <vertices id="mesh1-geometry-vertex">'], $
           [ '               <input semantic="POSITION" source="#mesh1-geometry-position"/>'], $
           [ '            </vertices>'], $
-          [ '            <triangles material="kdm-kml_curtain" count="4">'], $
+          [ '            <triangles material="kdm-kml_vertical" count="4">'], $
           [ '               <input semantic="VERTEX" source="#mesh1-geometry-vertex" offset="0"/>'], $
           [ '               <input semantic="NORMAL" source="#mesh1-geometry-normal" offset="1"/>'], $
           [ '               <input semantic="TEXCOORD" source="#mesh1-geometry-uv" offset="2" set="0"/>'], $
@@ -142,7 +299,7 @@ function kdm_kml_vertical_dae
           [ '               <instance_geometry url="#mesh1-geometry">'], $
           [ '                  <bind_material>'], $
           [ '                     <technique_common>'], $
-          [ '                        <instance_material symbol="kdm-kml_curtain" target="#kdm-kml_curtainID">'], $
+          [ '                        <instance_material symbol="kdm-kml_vertical" target="#kdm-kml_verticalID">'], $
           [ '                           <bind_vertex_input semantic="UVSET0" input_semantic="TEXCOORD" input_set="0"/>'], $
           [ '                        </instance_material>'], $
           [ '                     </technique_common>'], $
@@ -161,20 +318,14 @@ end
 	
 
 
-;; helper function to read in a complete file to one long string
-function kdm_kml_curtain_readfile, file
-  lines=FILE_LINES(file)
-  rr=STRARR(lines)
-  OPENR, lun, file, /GET_LUN
-  READF, lun, rr
-  FREE_LUN, lun
-  return, rr
-end
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
 ;; helper function: Given a string (str), a search term (str0) and a
 ;; replacement term (str1), find the search term and relpace it with
-;; the replacement term.
-pro kdm_kml_curtain_repstr, str, str0,str1
+;; the replacement term. Used to stretch the corners and top of the
+;; DAE file.
+;;
+pro kdm_kml_vertical_repstr, str, str0,str1
   for i = 0, n_elements(str)-1 do begin
      stri = str[i]
      result = STRPOS( stri, str0 )
@@ -194,11 +345,18 @@ end
 pro kdm_kml_vertical::KMLbody
   self->kdm_kml_geometry::KMLbody
 
+  ;; Given two lat and lon pairs for the grounded points of the data
+  ;; curtain, find out the distance between the two points. Also
+  ;; determine the distance at the top of the curtain, a slightly
+  ;; longer arclen due to the curvature of the earth.
 
   ll2rb, self.lon0,self.lat0,self.lon1,self.lat1,dist,azi,/DEGREES
   bot_dist = (dist*!dtor)*6378.1 * 1e3                   ; distance in meters on surface
   top_dist = (dist*!dtor)*(6378.1 * 1e3 + self.top_altitude ) ; distance in meters at top
   top_alt_str = STRTRIM(LONG(self.top_altitude),2)
+
+  ;; Calculate the center point which is where the model is placed,
+  ;; and the direction (azimuth).
 
   lat_center = (self.lat0+self.lat1)/2.
   lon_center = (self.lon0+self.lon1)/2.
@@ -209,28 +367,23 @@ pro kdm_kml_vertical::KMLbody
   folder1 = folder0 + ps + "files"
   file_mkdir, folder0 & file_mkdir, folder1
 
-  findpro, 'kdm_kml_vertical__define', dirlist=d ; find self
-  template = d ;+'/curtain_template'
   ;; adjust the DAE file to the new coordinates. Set the width at the
   ;; base, the width at the top, and the height
-  ;;str = kdm_kml_curtain_readfile( template+ps+'files'+ps+'curtain.dae' )
   str = kdm_kml_vertical_dae()
   ;; <float_array id="mesh1-geometry-position-array" count="12">BLBL 0 0 BRBR  0 0 TLTL 0 HHHL TRTR 0  HHHR</float_array>
-  kdm_kml_curtain_repstr, str, "BLBL", STRTRIM( -bot_dist/2.0, 2 )
-  kdm_kml_curtain_repstr, str, "BRBR", STRTRIM( bot_dist/2.0, 2 )
-  kdm_kml_curtain_repstr, str, "TLTL", STRTRIM( -top_dist/2.0, 2 )
-  kdm_kml_curtain_repstr, str, "TRTR", STRTRIM( top_dist/2.0, 2 )
-  kdm_kml_curtain_repstr, str, "HHHL", top_alt_str
-  kdm_kml_curtain_repstr, str, "HHHR", top_alt_str
+  kdm_kml_vertical_repstr, str, "BLBL", STRTRIM( -bot_dist/2.0, 2 )
+  kdm_kml_vertical_repstr, str, "BRBR", STRTRIM( bot_dist/2.0, 2 )
+  kdm_kml_vertical_repstr, str, "TLTL", STRTRIM( -top_dist/2.0, 2 )
+  kdm_kml_vertical_repstr, str, "TRTR", STRTRIM( top_dist/2.0, 2 )
+  kdm_kml_vertical_repstr, str, "HHHL", top_alt_str
+  kdm_kml_vertical_repstr, str, "HHHR", top_alt_str
 
   kdm_filepathext, self.vertical_image, file=vertical_image_file
-  kdm_kml_curtain_repstr, str, "curtain.png", vertical_image_file
+  kdm_kml_vertical_repstr, str, "IMAGE.PNG", vertical_image_file
 
   openw, lun, folder0+ps+'files'+ps+vertical_image_file+'.dae', /get
   printf, lun, str
   free_lun, lun
-
-
 
 
   self->buildsource, self->xmlTag( 'altitudeMode', self.x_altitudeMode )
@@ -247,6 +400,8 @@ pro kdm_kml_vertical::KMLbody
   self->buildsource, self->xmlTag( 'roll', self.roll )
   self->buildsource, "</Orientation>"
   ;; Scale
+  ;; Keep the scale of the data curtain at 1, and set the actual
+  ;; distances to real values (above with TLTL, BRBR, etc.)
   self->buildsource, "<Scale>"
   self->buildsource, self->xmlTag( 'x', '1' );self.x_scale )
   self->buildsource, self->xmlTag( 'y', '1' );self.y_scale )
@@ -310,12 +465,17 @@ end
 
 
 pro kdm_kml_vertical_test
+  
+  ;; A slightly complex example. Generates ~21 vertical curtains in
+  ;; random locations and orientations each with their own unique
+  ;; image (data) painted on the face. Each curtain also contains a
+  ;; KML TimeSpan() so that the time slider can be used to show and
+  ;; hide them.
+
   file_mkdir, 'kdm_kml_vertical_example'
   cd, 'kdm_kml_vertical_example'
   folder = obj_new('kdm_kml_folder')
 
-  ;; generate 20 images and place them around the globe as vertical
-  ;; curtains of data     
   for img = 0, 20 do begin
      
      loadct, img, /silent ; colortables 0 through 10
