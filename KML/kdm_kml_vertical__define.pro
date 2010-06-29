@@ -360,7 +360,10 @@ pro kdm_kml_vertical::KMLbody
 
   lat_center = (self.lat0+self.lat1)/2.
   lon_center = (self.lon0+self.lon1)/2.
-  azi = STRTRIM((azi+90),2)
+
+  azi = azi+90
+  cirrange, azi
+  azi = STRTRIM((azi),2)
 
   ps = path_sep()
   folder0 = file_uniq()
