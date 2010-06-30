@@ -57,7 +57,7 @@ PRO plotg, xx_in, yy_in, $
 xx = xx_in
 IF ( n_elements( yy_in ) EQ 0 ) THEN BEGIN
     yy = xx
-    xx = indgen( n_elements( xx ) )
+    xx = lindgen( n_elements( xx ) )
 ENDIF ELSE yy = yy_in
 
 tvlct,rsave,gsave,bsave,/get
