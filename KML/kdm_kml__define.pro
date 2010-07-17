@@ -122,7 +122,8 @@ pro kdm_kml::saveKML, recursive=recursive, $
         file = keyword_set( kmz ) ? $
                STRMID(self.filename,0,STRLEN(self.filename)-3)+'kmz' : $
                self.filename
-        spawn, 'open -a "Google Earth" ' + file
+        MESSAGE, "Google Earth must already be running", /CONTINUE
+        spawn, 'open ' + file
      endif
   endif
 end
@@ -166,7 +167,8 @@ end
 pro kdm_kml::KMLhead
   self->buildsource, '<?xml version="1.0" encoding="UTF-8"?>'
   self->buildsource, '<kml xmlns="http://www.opengis.net/kml/2.2"'
-  self->buildsource, ' xmlns:gx="http://www.google.com/kml/ext/2.2">'
+  self->buildsource, ' xmlns:gx="http://www.google.com/kml/ext/2.2"'
+  self->buildsource, ' xmlns:atom="http://www.w3.org/2005/Atom">'
 end
 pro kdm_kml::KMLbody
   ;;self->buildsource, "<!-- Top Level Body -->"
