@@ -97,3 +97,35 @@ pro kdm_kml_placemark__define, class
             ;;geometry: obj_new() }
 end
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; test
+;;
+pro kdm_kml_placemark_test
+  kml = obj_new('kdm_kml', file='placemarks.kml')
+  d = obj_new( 'kdm_kml_document', visibility=1 )
+  f = obj_new( 'kdm_kml_folder', id='folder', name='aFolder' )
+
+  for i = 0, 42 do begin
+     istr = STRING(i,FORMAT='(I03)')
+     p = obj_new('kdm_kml_placemark', $
+                 id='Pid'+istr, $
+                 lat=randomn(seed,1)*90, $
+                 lon=randomu(seed,1)*360, $
+                 x_altitudemode='relativeToGround', $
+                 altitude=randomu(seed,1)*1e7, $
+                 extrude=randomu(seed,1) gt 0.5, $
+                 description=istr, $
+                 name='Pid'+istr, $
+                 visibility=1 )
+     f->add, p
+  endfor
+  d->add, f
+  kml->add, d
+  kml->saveKML, /openGE
+end
+
+kdm_kml_placemark_test
+end
