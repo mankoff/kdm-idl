@@ -75,6 +75,7 @@
 ;-
 pro kdm_kml::saveKML, recursive=recursive, $
                       kmz=kmz, openge=openge, $
+                      hint=hint, $
                       _EXTRA=e
 
   ;; open the file, and store the LUN
@@ -90,7 +91,9 @@ pro kdm_kml::saveKML, recursive=recursive, $
   endif
 
   ;; print the header
-  self->KMLhead
+  if obj_class(self) eq 'KDM_KML' then self->KMLhead, hint=hint ELSE self->kmlHead ;; hack. 
+  ;; Perhaps all KMLHEAD's should be redefined to support
+  ;; _EXTRA=e so I can pass a hint to just this one?
   self->KMLbody
 
   ;; recursively print all children
@@ -164,11 +167,13 @@ end
 pro kdm_kml::buildsource, kml
   printf, !KDM_KML_LUN, kml
 end
-pro kdm_kml::KMLhead
+pro kdm_kml::KMLhead, hint=hint
   self->buildsource, '<?xml version="1.0" encoding="UTF-8"?>'
   self->buildsource, '<kml xmlns="http://www.opengis.net/kml/2.2"'
   self->buildsource, ' xmlns:gx="http://www.google.com/kml/ext/2.2"'
-  self->buildsource, ' xmlns:atom="http://www.w3.org/2005/Atom">'
+  self->buildsource, ' xmlns:atom="http://www.w3.org/2005/Atom"'
+  if keyword_set( hint ) then  self->buildsource, ' hint="target='+hint+'"'
+  self->buildsource, '>'
 end
 pro kdm_kml::KMLbody
   ;;self->buildsource, "<!-- Top Level Body -->"

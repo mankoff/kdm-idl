@@ -124,7 +124,7 @@ pro kdm_kml_placemark_test
   endfor
   d->add, f
   kml->add, d
-  kml->saveKML, /openGE
+  kml->saveKML, /openGE, hint='mars'
 end
 
 kdm_kml_placemark_test
