@@ -1,12 +1,9 @@
-;; <Style>
-;;   <IconStyle>
-;;     <color>ff0078ff</color>
-;;     <scale>1.55</scale>
-;;     <Icon>
-;;       <href>circle.png</href>
-;;     </Icon>
-;;   </IconStyle>
-;; </Style>
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; http://code.google.com/apis/kml/documentation/kmlreference.html#iconstyle
+;;
+
 pro kdm_kml_iconstyle::KMLhead
   ;;self->kdm_kml_::KMLhead
   ;;self->buildsource, '<Style id="'+self.ID+'">'
@@ -20,6 +17,14 @@ pro kdm_kml_iconstyle::KMLbody
 end
 pro kdm_kml_iconstyle::KMLtail
   self->buildsource, '</Icon>'
+  if self.xunits ne '' and $
+     self.yunits ne '' then begin
+     self->buildSource, '<hotSpot ' + $
+                        'x="' + STRTRIM(self.hotSpotX,2) + '" ' + $
+                        'y="' + STRTRIM(self.hotSpotY,2) + '" ' + $
+                        'xunits="' + self.xunits + '" ' + $
+                        'yunits="' + self.yunits + '"/>'
+  endif
   self->buildsource, '</IconStyle>'
 end
 
@@ -43,6 +48,10 @@ pro kdm_kml_iconstyle__define, class
   class = { kdm_kml_iconstyle, $
             inherits kdm_kml_colorstyle, $
             scale: 0.0, $
+            hotSpotX: 0.0, $
+            hotSpotY: 0.0, $
+            xunits: '', $
+            yunits: '', $
             href: '' }
 end
 
