@@ -90,6 +90,11 @@ end
 pro kdm_kml_liststyle::KMLbody
   if self.listItemType ne '' then self->buildsource, self->xmlTag( 'listItemType', self.listItemType )
   if self.bgColor ne '' then self->buildsource, self->xmlTag( 'bgColor', self.bgColor )
+  if self.itemIcon ne '' then begin
+     self->buildsource, '<ItemIcon>'
+     self->buildsource, self->xmlTag( 'href', self.itemIcon )
+     self->buildsource, '</ItemIcon>'
+  endif
 end
 pro kdm_kml_liststyle::KMLtail
   self->buildsource, '</ListStyle>'
@@ -107,6 +112,7 @@ pro kdm_kml_liststyle__define, class
   class = { kdm_kml_liststyle, $
             inherits kdm_kml_object, $
             listItemType: '', $
-            bgcolor: '' }
+            bgcolor: '', $
+            itemIcon: '' }
 end
 
