@@ -93,6 +93,7 @@ pro kdm_kml_liststyle::KMLbody
   if self.itemIcon ne '' then begin
      self->buildsource, '<ItemIcon>'
      self->buildsource, self->xmlTag( 'href', self.itemIcon )
+     if self.state ne '' then self->buildsource, self->xmlTag( 'state', self.state )
      self->buildsource, '</ItemIcon>'
   endif
 end
@@ -113,6 +114,7 @@ pro kdm_kml_liststyle__define, class
             inherits kdm_kml_object, $
             listItemType: '', $
             bgcolor: '', $
+            state: '', $
             itemIcon: '' }
 end
 
