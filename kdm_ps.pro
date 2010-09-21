@@ -101,39 +101,44 @@ if keyword_set(close) then begin
    if keyword_set(pdf) OR keyword_set(png) then begin
       file_info = strsplit( ps_info[2], /extract )
       psname = file_info[1]
-      pdfname = STRMID(psname,0,STRLEN(psname)-3) + '.pdf'
-      spawn, 'pstopdf ' + psname + ' -o ' + pdfname, stdout, stderr
 
-      ;; crop if requested
-      if keyword_set(crop) then $
-         spawn, 'pdfcrop --clip --hires --margins 15 ' + pdfname + ' ' + pdfname, stdout, stderr
+      ;;pdfname = STRMID(psname,0,STRLEN(psname)-3) + '.pdf'
+      kdm_filepathext, psname, pathstr=pathstr, root=root
+      pdfname = pathstr + root + '.pdf'
+      pngname = pathstr + root + '.png'
 
-      ;; rotate if requested
-      if keyword_set(rotate) then begin
-         cmd = 'sips --rotate '+STRTRIM(rotate,2) + ' '+pdfname
-         print, cmd
-         spawn, cmd, stdout, stderr
-      endif
+      if keyword_set(pdf) then begin
+         spawn, 'pstopdf ' + psname + ' -o ' + pdfname, stdout, stderr
+
+         ;; crop if requested
+         if keyword_set(crop) then $
+            spawn, 'pdfcrop --clip --hires --margins 15 ' + pdfname + ' ' + pdfname, stdout, stderr
+
+         ;; rotate if requested
+         if keyword_set(rotate) then begin
+            cmd = 'sips --rotate '+STRTRIM(rotate,2) + ' '+pdfname
+            print, cmd
+            spawn, cmd, stdout, stderr
+         endif
          
-      ;; low quality (shrink size)?
-      if keyword_set(low) then begin
-         pdfnamelo = STRMID(psname,0,STRLEN(psname)-3) + '_low.pdf'
-         cmd = 'sips -s format pdf -s formatOptions low '+pdfname+ $
-               ' -s dpiHeight 72.0 -s dpiWidth 72.0 --out '+pdfnamelo
-         MESSAGE, "Producing low resolution PDF: "+pdfnamelo, /CONTINUE
-         pdfname = pdfnamelo
-         spawn, cmd, stdout, stderr
-      endif
-      
-      ;; PNG? Doesn't work for multi-page PDFs
-      if keyword_set(png) then begin
-         pngname = STRMID(psname,0,STRLEN(psname)-3) + '.png'
-         spawn, 'gm convert ' + pdfname + ' ' + pngname, stdout, stderr
-      endif
-
-      if keyword_set( show ) then begin
-         if keyword_set(png) then spawn, 'open '+pngname+'&', stdout, stderr
+         ;; low quality (shrink size)?
+         if keyword_set(low) then begin
+            pdfnamelo = STRMID(psname,0,STRLEN(psname)-3) + '_low.pdf'
+            cmd = 'sips -s format pdf -s formatOptions low '+pdfname+ $
+                  ' -s dpiHeight 72.0 -s dpiWidth 72.0 --out '+pdfnamelo
+            MESSAGE, "Producing low resolution PDF: "+pdfnamelo, /CONTINUE
+            pdfname = pdfnamelo
+            spawn, cmd, stdout, stderr
+         endif
          if keyword_set(pdf) then spawn, 'open '+pdfname+'&', stdout, stderr
+      endif ;; PDF 
+      
+      ;; Doesn't work for multi-page PDFs
+      if keyword_set(png) then begin
+         spawn, 'gm convert ' + psname + ' ' + pngname, stdout, stderr
+         if keyword_set(crop) then spawn, 'gm mogrify -trim ' + pngname, stdout, stderr
+         if keyword_set(rotate) then spawn, 'gm mogrify -rotate '+STRTRIM(rotate,2)+ ' ' + pngname, stdout, stderr
+         if keyword_set(show) then spawn, 'open '+pngname+'&', stdout, stderr
       endif
 
    endif
@@ -142,10 +147,11 @@ end
 
 pro kdm_ps_test
   COMPILE_OPT hidden, IDL2
-  kdm_ps, /landscape, filename='kdm_ps_test.ps'
+  kdm_ps, /landscape, filename='kdm_ps_test.eps'
   plot, [0,0], [1,1], position=[0,0,1,1]
   xyouts, 0.5, 0.5, 'Hello World', align=0.5, charsize=3, charth=3
   kdm_ps, /close, /pdf, /show, /crop, /PNG, ROTATE=-90, filename='kdm_ps_test.ps'
+  ;kdm_ps, /close, /show, /crop, /PNG, ROTATE=-90
 end
 
 
