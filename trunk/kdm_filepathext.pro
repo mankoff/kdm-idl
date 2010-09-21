@@ -10,6 +10,15 @@ pro kdm_filepathext, string, $
                      extarr=extarr, $   ; [ext0,ex1]
                      _EXTRA=e
 
+  if n_elements(string) eq 0 then begin
+     test = "/Users/mankoff/Desktop/foo.tar.gz"
+     kdm_filepathext, test, pathstr=pathstr, patharr=patharr, $
+                      file=file, root=root, $
+                      extstr=extstr, extarr=extarr
+     help, test, pathstr, patharr, file, root, extstr, extarr
+     return
+  endif
+
   pathstr = file_dirname(string, /mark)
   patharr = STRSPLIT( pathstr, path_sep(), /EXTRACT )
 
