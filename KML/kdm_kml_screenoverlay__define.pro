@@ -1,5 +1,13 @@
-
-;; ICON is in HREF in the kdm_kml_overlay object
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; http://code.google.com/apis/kml/documentation/kmlreference.html#screenoverlay
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Notes:
+;; * ICON is in HREF in the kdm_kml_overlay object
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 pro kdm_kml_ScreenOverlay::KMLhead
   self->kdm_kml_feature::KMLhead
@@ -25,6 +33,12 @@ pro kdm_kml_ScreenOverlay::KMLbody
                      ' xunits="'+self.screenXY_xunits+'"' + $
                      ' yunits="'+self.screenXY_yunits+'" />'
 
+  self->buildsource, '<size ' + $
+                     ' x="'+STRTRIM(self.sizex,2)+'"' + $
+                     ' y="'+STRTRIM(self.sizey,2)+'"' + $
+                     ' xunits="'+self.size_xunits+'"' + $
+                     ' yunits="'+self.size_yunits+'" />'
+
   self->buildsource, '<rotationXY ' + $
                      ' x="'+STRTRIM(self.rotationXYx,2)+'"' + $
                      ' y="'+STRTRIM(self.rotationXYy,2)+'"' + $
@@ -43,6 +57,8 @@ function kdm_kml_ScreenOverlay::init, _EXTRA=e
                      overlayXY_yunits='fraction', $
                      screenXY_xunits='fraction', $
                      screenXY_yunits='fraction', $
+                     size_xunits='fraction', $
+                     size_yunits='fraction', $
                      rotationXY_xunits='fraction', $
                      rotationXY_yunits='fraction'
   self->setProperty, _EXTRA=e
@@ -65,6 +81,11 @@ pro kdm_kml_ScreenOverlay__define, class
             screenXY_xunits: '', $
             screenXY_yunits: '', $
 
+            sizex: 0.0, $
+            sizey: 0.0, $
+            size_xunits: '', $
+            size_yunits: '', $
+
             rotationXYx: 0.0, $
             rotationXYy: 0.0, $
             rotationXY_xunits: '', $
@@ -79,6 +100,7 @@ end
 icon = 'http://kml-samples.googlecode.com/svn/trunk/resources/top_left.jpg'
 o = obj_new('kdm_kml_screenoverlay', $
             overlayXYx=1, overlayXYy=0, overlayxy_xunits='fraction', $
+            ;;sizex=500, size_xunits='pixels', $
             screenxyx=1, screenxyy=0, $
             href=icon )
 kml = obj_new('kdm_kml', file='test.kml')
