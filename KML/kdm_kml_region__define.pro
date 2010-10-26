@@ -158,13 +158,13 @@ pro kdm_kml_region__define, class
             south:0.0, $
             east:0.0, $
             west:0.0, $
-            minAltitude:0.0, $
-            maxAltitude:0.0, $
+            minAltitude:0.0d, $
+            maxAltitude:0.0d, $
             x_altitudeMode:'', $
-            minLodPixels:0.0, $
-            maxLodPixels:0.0, $
-            minFadeExtent:0.0, $
-            maxFadeExtent:0.0, $
+            minLodPixels:0.0d, $
+            maxLodPixels:0.0d, $
+            minFadeExtent:0.0d, $
+            maxFadeExtent:0.0d, $
             inherits kdm_kml_object }
 end
 

@@ -126,7 +126,7 @@ pro kdm_kml_lookat__define, class
             inherits kdm_kml_abstractview, $
             longitude: 0.0, $
             latitude: 0.0, $
-            altitude: 0.0, $
+            altitude: 0.0d, $
             heading: 0.0, $
             tilt: 0.0, $
             range: 0.0d, $

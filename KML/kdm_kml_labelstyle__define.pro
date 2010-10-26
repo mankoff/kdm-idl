@@ -27,6 +27,6 @@ end
 pro kdm_kml_labelstyle__define, class
   class = { kdm_kml_labelstyle, $
             inherits kdm_kml_colorstyle, $
-            scale: 0 }
+            scale: 0.0 }
 end
 

@@ -46,14 +46,18 @@ pro kdm_kml_groundoverlay__define, class
   arr = [0.0d, 0.0d, 0.0d]
   class = { kdm_kml_groundoverlay, $
             inherits kdm_kml_overlay, $
-            altitude: 0, $
+            altitude: 0.0d, $
             x_altitudemode: '', $
             ;; boundaries nested in LatLonBox
-            north: 0.0, south: 0.0, east: 0.0, west: 0.0, rotation: 0, $
+            north: 0.0, south: 0.0, east: 0.0, west: 0.0, $
+            rotation: 0.0, $
             UL:arr, LL:arr, UR:arr, LR:arr }
 end
 
 
+;;
+;; Testing
+;;
 img = bytarr(2,2)+255
 write_png, 'test.png', img
 kml = obj_new( 'kdm_kml', file='test.kml' )

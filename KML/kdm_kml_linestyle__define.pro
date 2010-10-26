@@ -60,6 +60,6 @@ end
 pro kdm_kml_linestyle__define, class
   class = { kdm_kml_linestyle, $
             inherits kdm_kml_colorstyle, $
-            width: 0 }
+            width: 0.0 }
 end
 
