@@ -229,7 +229,7 @@ pro kdm_kml_model__define, class
             x_altitudeMode: '', $
             latitude: 0.0, $
             longitude: 0.0, $
-            altitude: 0.0, $
+            altitude: 0.0d, $
             heading: 0.0, $
             tilt: 0.0, $
             roll: 0.0, $

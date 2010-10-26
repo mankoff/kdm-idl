@@ -94,7 +94,6 @@ end
 pro kdm_kml_placemark__define, class
   class = { kdm_kml_placemark, $
             inherits kdm_kml_feature }
-            ;;geometry: obj_new() }
 end
 
 

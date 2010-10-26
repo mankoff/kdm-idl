@@ -33,8 +33,8 @@ end
 pro kdm_kml_NetworkLink__define, class
   class = { kdm_kml_NetworkLink, $
             inherits kdm_kml_object, $
-            visibility: 0, $
-            open: 0, $
+            visibility: 0B, $
+            open: 0B, $
             name: '', $
             SnipMaxLines: 0, $
             description: '' }
