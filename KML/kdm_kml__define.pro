@@ -182,8 +182,8 @@ pro kdm_kml::KMLtail
   self->buildsource, '</kml>'
 end
 
-function kdm_kml_object::xmlTag, tag, str, _EXTRA=e
-  return, '<'+tag+'>'+STRTRIM(str,2)+'</'+tag+'>'
+function kdm_kml_object::xmlTag, tag, val, _EXTRA=e
+  return, '<'+tag+'>'+STRTRIM(STRING(val),2)+'</'+tag+'>'
 end
 
 

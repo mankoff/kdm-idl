@@ -23,7 +23,7 @@ end
 
 function kdm_kml_NetworkLink::init, _EXTRA=e
   if self->kdm_kml_object::init(_EXTRA=e) ne 1 then return, 0
-  ;;self->setProperty, visibility=1, open=0
+  self->setProperty, visibility=1, open=0
   self->setProperty, _EXTRA=e
   return, 1
 end
@@ -33,14 +33,16 @@ end
 pro kdm_kml_NetworkLink__define, class
   class = { kdm_kml_NetworkLink, $
             inherits kdm_kml_object, $
-            visibility: 0B, $
-            open: 0B, $
+            visibility: 0, $
+            open: 0, $
             name: '', $
             SnipMaxLines: 0, $
             description: '' }
 end
 
+kml = obj_new('kdm_kml', file='test.kml')
 nl = obj_new('kdm_kml_NetworkLink', open=0, vis=0 )
 nl->add, obj_new('kdm_kml_link', href="http://kenmankoff.com/maps/MM71/MM71_links.kml" )
-nl->saveKML
+kml->add, nl
+kml->saveKML
 end

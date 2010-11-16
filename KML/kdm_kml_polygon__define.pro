@@ -32,7 +32,7 @@ pro kdm_kml_polygon__define, class
   class = { kdm_kml_polygon, $
             inherits kdm_kml_geometry, $
             x_altitudeMode: '', $ ; clampToGround, relativeToGround, or absolut OR clampToSeaFloor, relativeToSeaFloor
-            extrude: 0B, $
-            tessellate: 0B }
+            extrude: 0, $
+            tessellate: 0 }
 end
 

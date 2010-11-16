@@ -42,8 +42,8 @@ end
 pro kdm_kml_linearring__define, class
   class = { kdm_kml_linearring, $
             inherits kdm_kml_geometry, $
-            extrude: 0B, $
-            tessellate: 0B, $
+            extrude: 0, $
+            tessellate: 0, $
             x_altitudeMode: '', $ ; clampToGround, relativeToGround, or absolut OR clampToSeaFloor, relativeToSeaFloor
             coordinates: '' }
 end
