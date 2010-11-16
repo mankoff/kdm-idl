@@ -293,8 +293,8 @@ pro kdm_kml_feature__define, class
   class = { kdm_kml_feature, $
             inherits kdm_kml_object, $
             name: '', $
-            visibility: 0B, $
-            open: 0B, $
+            visibility: 0, $
+            open: 0, $
             Snippet: '', $
             snipmaxlines: 0, $
             description: '', $

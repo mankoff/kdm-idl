@@ -31,7 +31,7 @@ end
 pro kdm_kml_point__define, class
   class = { kdm_kml_point, $
             inherits kdm_kml_geometry, $
-            extrude: 0B, $
+            extrude: 0, $
             x_altitudeMode: '', $ ; clampToGround, relativeToGround, or absolut OR clampToSeaFloor, relativeToSeaFloor
             altitude: 0.0d, $
             longitude: 0.0, $

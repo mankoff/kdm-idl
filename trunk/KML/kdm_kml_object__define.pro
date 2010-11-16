@@ -105,7 +105,6 @@ function kdm_kml_object::init, id=id, _EXTRA=e
   if self->kdm_kml::init() ne 1 then return, 0
   if not keyword_set(id) then id = 'ID'
   id = STRJOIN(STRSPLIT(id,/extract))
-  ;self->setProperty, filename='kdm_kml.kml', newline=10B
   self->setProperty, id=id, _EXTRA=e
   return, 1
 end
