@@ -57,11 +57,13 @@
 ;                   (convert) to GraphicsMagick (gm convert).
 ;-
 
-pro kdm_ps, landscape=landscape, $
+pro kdm_ps, filename=filename, $
+            landscape=landscape, $
             portrait=portrait, $
             close=close, $
             pdf=pdf, crop=crop, $
             png=png, $
+            tiff=tiff, $
             show=show, $
             low=low, $
             rotate=rotate, $
@@ -69,20 +71,30 @@ pro kdm_ps, landscape=landscape, $
 
 if not keyword_set(close) then begin
    set_plot,'ps'
+
+   kdm_filepathext, filename, extstr=extstr
+   if STRLOWCASE(strmid(extstr,1,1)) eq 'e' then encaps=1 else encaps=0
+
    if keyword_set(portrait) then begin
       device, /color, bits=8, $
               /portrait, $
+              filename=filename, $
+              encapsulated=encaps, $
               xoff=0.0, yoff=0, xsize=8.5, ysize=11, /inches, $
               _EXTRA=e
    endif else if keyword_set(landscape) then begin
       device, /color, bits=8, $
               /landscape, $
+              filename=filename, $
+              encapsulated=encaps, $
               xoff=0.0, yoff=11, xsize=11, ysize=8.5, /inches, $
               scale_factor=1, $
               _EXTRA=e
    endif else begin
       ;; print, 'here'
       device, /color, bits=8, $
+              filename=filename, $
+              encapsulated=encaps, $
               /portrait, $
               ;; these are default, from clean "help, /device"
               ;; xoff=0.75, yoff=5, xsize=7, ysize=5
@@ -98,7 +110,7 @@ if keyword_set(close) then begin
    help, /device, out=ps_info
    device, /close ;, _EXTRA=e
    set_plot, 'x'
-   if keyword_set(pdf) OR keyword_set(png) then begin
+   if keyword_set(pdf) OR keyword_set(png) OR keyword_set(TIFF) then begin
       file_info = strsplit( ps_info[2], /extract )
       psname = file_info[1]
 
@@ -106,6 +118,7 @@ if keyword_set(close) then begin
       kdm_filepathext, psname, pathstr=pathstr, root=root
       pdfname = pathstr + root + '.pdf'
       pngname = pathstr + root + '.png'
+      tifname = pathstr + root + '.tif'
 
       if keyword_set(pdf) then begin
          spawn, 'pstopdf ' + psname + ' -o ' + pdfname, stdout, stderr
@@ -122,23 +135,41 @@ if keyword_set(close) then begin
          endif
          
          ;; low quality (shrink size)?
-         if keyword_set(low) then begin
-            pdfnamelo = STRMID(psname,0,STRLEN(psname)-3) + '_low.pdf'
-            cmd = 'sips -s format pdf -s formatOptions low '+pdfname+ $
-                  ' -s dpiHeight 72.0 -s dpiWidth 72.0 --out '+pdfnamelo
-            MESSAGE, "Producing low resolution PDF: "+pdfnamelo, /CONTINUE
-            pdfname = pdfnamelo
-            spawn, cmd, stdout, stderr
-         endif
-         if keyword_set(pdf) then spawn, 'open '+pdfname+'&', stdout, stderr
+;;          if keyword_set(low) then begin
+;;             pdfnamelo = STRMID(psname,0,STRLEN(psname)-3) + '_low.pdf'
+;;             cmd = 'sips -s format pdf -s formatOptions low '+pdfname+ $
+;;                   ' -s dpiHeight 72.0 -s dpiWidth 72.0 --out '+pdfnamelo
+;;             MESSAGE, "Producing low resolution PDF: "+pdfnamelo, /CONTINUE
+;;             pdfname = pdfnamelo
+;;             spawn, cmd, stdout, stderr
+;;          endif
+         if keyword_set(show) then spawn, 'open '+pdfname+'&', stdout, stderr
       endif ;; PDF 
       
       ;; Doesn't work for multi-page PDFs
       if keyword_set(png) then begin
-         spawn, 'gm convert ' + psname + ' ' + pngname, stdout, stderr
+         if keyword_set(low) then begin
+            dense=' -density 72x72 ' 
+            border=' -border 7x7 -bordercolor white '
+         endif else begin
+            dense=' -density 300x300 '
+            border=' -border 30x30 -bordercolor white '
+         endelse
+         spawn, 'gm convert ' + dense + psname + ' ' + pngname, stdout, stderr
          if keyword_set(crop) then spawn, 'gm mogrify -trim ' + pngname, stdout, stderr
+         if keyword_set(crop) then spawn, 'gm mogrify ' + border + pngname, stdout, stderr
          if keyword_set(rotate) then spawn, 'gm mogrify -rotate '+STRTRIM(rotate,2)+ ' ' + pngname, stdout, stderr
          if keyword_set(show) then spawn, 'open '+pngname+'&', stdout, stderr
+      endif
+
+      ;; Doesn't work for multi-page PDFs
+      if keyword_set(tiff) then begin
+         if keyword_set(low) then dense=' -density 72x72 ' else dense=' -density 300x300 '
+         spawn, 'gm convert -compress LZW ' + dense + psname + ' ' + tifname, stdout, stderr
+         if keyword_set(crop) then spawn, 'gm mogrify -trim ' + tifname, stdout, stderr
+         if keyword_set(crop) then spawn, 'gm mogrify ' + border + tifname, stdout, stderr
+         if keyword_set(rotate) then spawn, 'gm mogrify -rotate '+STRTRIM(rotate,2)+ ' ' + tifname, stdout, stderr
+         if keyword_set(show) then spawn, 'open '+tifname+'&', stdout, stderr
       endif
 
    endif
@@ -148,9 +179,10 @@ end
 pro kdm_ps_test
   COMPILE_OPT hidden, IDL2
   kdm_ps, /landscape, filename='kdm_ps_test.eps'
-  plot, [0,0], [1,1], position=[0,0,1,1]
+  plot, [0,0], [1,1], position=[0.3,.5,.8,.9], title='Foo'
   xyouts, 0.5, 0.5, 'Hello World', align=0.5, charsize=3, charth=3
-  kdm_ps, /close, /pdf, /show, /crop, /PNG, ROTATE=-90, filename='kdm_ps_test.ps'
+  kdm_ps, /close, /show, /crop, /PNG, /PDF, /TIF, ROTATE=90, filename='kdm_ps_test.ps'
+  ;;kdm_ps, /close, /show, /TIF, ROTATE=-90, filename='kdm_ps_test.ps', /LOW, /CROP
   ;kdm_ps, /close, /show, /crop, /PNG, ROTATE=-90
 end
 
