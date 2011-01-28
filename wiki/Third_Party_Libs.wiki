@@ -3,17 +3,45 @@
 
 = Introduction =
 
-This code base makes use of various 3rd party IDL libraries. 
+This code base makes use of various 3rd party IDL libraries. The [https://code.google.com/p/kdm-idl/source/browse/trunk/find_deps.sh find_deps.sh] shell script reports (via [http://idlastro.gsfc.nasa.gov/idl_html_help/RESOLVE_ALL.html RESOLVE_ALL]) which 3rd party procedures are used by this library.
+
+== 3rd Party Procedures ==
+
+ * JHU/cbar.pro
+ * JHU/imgunder.pro
+ * JHU/maken.pro
+ * JHU/makex.pro
+ * JHU/monthdays.pro
+ * JHU/scalearray.pro
+ * astronomy/pro/astro/ydn2md.pro
+ * astronomy/pro/jhuapl/ymd2dn.pro
+ * astronomy/pro/misc/datatype.pro
+ * astronomy/pro/misc/fstring.pro
+ * astronomy/pro/misc/minmax.pro
+ * astronomy/pro/misc/strnumber.pro
+ * astronomy/pro/misc/to_hex.pro
+ * astronomy/pro/misc/valid_num.pro
+ * coyote/coyote/programrootdir.pro
+ * coyote/coyote/savetomain.pro
+ * coyote/coyote/setdifference.pro
+ * coyote/coyote/themonths.pro
+ * misc/distance_sphere.pro
+ * motley/imdisp.pro
+
+== 3rd Party Libraries ==
 
 Not all of these are used by KDM-IDL, but it would probably be 
 a good idea to have them all installed. They may be used in the future,
 and they will help your code development.
 
-  * Coyote http://www.dfanning.com/
-  * JHU http://fermi.jhuapl.edu/s1r/idl/s1rlib/local_idl.html
-  * Astronomy http://idlastro.gsfc.nasa.gov/
-  * Catalyst http://www.dfanning.com/catalyst/howtoinstall.html
-  * Gumley http://cimss.ssec.wisc.edu/~gumley/
-  * Markwardt http://www.physics.wisc.edu/~craigm/idl/
-  * Michael Galloy http://michaelgalloy.com/
-  * Motley http://www.dfanning.com/hadfield/idl/README.html
+ * JHU http://fermi.jhuapl.edu/s1r/idl/s1rlib/local_idl.html
+ * MartinSchultz3 http://www.fz-juelich.de/icg/icg-1/idl_icglib/idl_source/idl_html/idl_lib_MartinSchultz3.routines.alpha.htm
+ * SSW http://www.mssl.ucl.ac.uk/surf/sswdoc/solarsoft/ssw_setup.html
+ * Astronomy http://idlastro.gsfc.nasa.gov/
+ * Coyote http://www.dfanning.com/
+ * Catalyst http://www.dfanning.com/catalyst/howtoinstall.html
+ * Gumley http://cimss.ssec.wisc.edu/~gumley/
+ * Knight http://idlastro.gsfc.nasa.gov/other_url.html
+ * Markwardt http://www.physics.wisc.edu/~craigm/idl/
+ * Michael Galloy http://michaelgalloy.com/
+ * Motley http://www.dfanning.com/hadfield/idl/README.html
