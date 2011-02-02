@@ -226,6 +226,14 @@ pro kdm_dt::autofill
      self.month = self.month+1
   endif
   
+  ;; Seconds given, nothing else?
+  if self.second ne -1 AND self.minute eq -1 and self.hour eq -1 then begin
+     self.hour = floor(self.second / (60*60.))
+     self.second = self.second - (self.hour*60*60.)
+     self.minute = floor(self.second / (60.))
+     self.second = self.second - (self.minute*60)
+  endif
+
   ;; fill hour from day or doy fraction
   if self.hour eq -1 AND ( (self.doy mod 1 ne 0) OR (self.day mod 1 ne 0) ) then $
      self.hour = 24.0 * ( max( [ self.day, self.doy ] ) mod 1 )
@@ -306,6 +314,7 @@ pro kdm_dt__define, class, _EXTRA=e
 end
 
 help, (obj_new('kdm_dt', /now))->getProperty(/all), /st
+print, (obj_new('kdm_dt', year=2009, month=11, day=07, second=59908))->TimeStamp()
 end
 
 ;; kdm_dt testing
