@@ -34,8 +34,8 @@ pro kdm_kml_point__define, class
             extrude: 0, $
             x_altitudeMode: '', $ ; clampToGround, relativeToGround, or absolut OR clampToSeaFloor, relativeToSeaFloor
             altitude: 0.0d, $
-            longitude: 0.0, $
-            latitude: 0.0 }
+            longitude: 0.0d, $
+            latitude: 0.0d }
 end
 
 ;; o = obj_new('kdm_kml_point', id='pointID', $
