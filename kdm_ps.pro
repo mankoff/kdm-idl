@@ -72,6 +72,8 @@ pro kdm_ps, filename=filename, $
 if not keyword_set(close) then begin
    set_plot,'ps'
 
+   kdm_isdefined, filename, default=file_uniq()+'.ps'
+
    kdm_filepathext, filename, extstr=extstr
    if STRLOWCASE(strmid(extstr,1,1)) eq 'e' then encaps=1 else encaps=0
 
