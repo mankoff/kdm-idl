@@ -68,13 +68,13 @@ if ( name EQ 'FILE_UNIQ' ) then pre = 'IDL_' ELSE pre = name + '_'
 pre = STRLOWCASE( pre )
 
 n = -1
-REPEAT BEGIN
+WHILE 1 DO BEGIN
     n = n + 1
     file = pre + STRING( n, FORMAT='(I4.4)', /PRINT )
-    ;f = findfile( file+'.*', count=count )
-    openr, lun, file, /get_lun, err=err
-    if keyword_set( lun ) then free_lun, lun
-ENDREP UNTIL ( err eq -247 ) ; no such file or directory
+    f = findfile( file+'.*', count=count )
+    if count eq 0 then break
+    if n gt 9999 then MESSAGE, "Can't find unique file"
+ENDWHILE
 return, file
 
 END
