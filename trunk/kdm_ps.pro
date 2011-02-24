@@ -61,7 +61,7 @@ pro kdm_ps, filename=filename, $
             landscape=landscape, $
             portrait=portrait, $
             close=close, $
-            pdf=pdf, crop=crop, $
+            pdf=pdf, nocrop=nocrop, $
             png=png, $
             tiff=tiff, $
             show=show, $
@@ -125,8 +125,8 @@ if keyword_set(close) then begin
       if keyword_set(pdf) then begin
          spawn, 'pstopdf ' + psname + ' -o ' + pdfname, stdout, stderr
 
-         ;; crop if requested
-         if keyword_set(crop) then $
+         ;; crop NOT requested
+         if not keyword_set(nocrop) then $
             spawn, 'pdfcrop --clip --hires --margins 15 ' + pdfname + ' ' + pdfname, stdout, stderr
 
          ;; rotate if requested
@@ -157,9 +157,9 @@ if keyword_set(close) then begin
             dense=' -density 300x300 '
             border=' -border 30x30 -bordercolor white '
          endelse
-         spawn, 'gm convert ' + dense + psname + ' ' + pngname, stdout, stderr
-         if keyword_set(crop) then spawn, 'gm mogrify -trim ' + pngname, stdout, stderr
-         if keyword_set(crop) then spawn, 'gm mogrify ' + border + pngname, stdout, stderr
+         spawn, 'gm convert -units PixelsPerInch ' + dense + psname + ' ' + pngname, stdout, stderr
+         if not keyword_set(nocrop) then spawn, 'gm mogrify -trim ' + pngname, stdout, stderr
+         if not keyword_set(nocrop) then spawn, 'gm mogrify ' + border + pngname, stdout, stderr
          if keyword_set(rotate) then spawn, 'gm mogrify -rotate '+STRTRIM(rotate,2)+ ' ' + pngname, stdout, stderr
          if keyword_set(show) then spawn, 'open '+pngname+'&', stdout, stderr
       endif
@@ -168,8 +168,8 @@ if keyword_set(close) then begin
       if keyword_set(tiff) then begin
          if keyword_set(low) then dense=' -density 72x72 ' else dense=' -density 300x300 '
          spawn, 'gm convert -compress LZW ' + dense + psname + ' ' + tifname, stdout, stderr
-         if keyword_set(crop) then spawn, 'gm mogrify -trim ' + tifname, stdout, stderr
-         if keyword_set(crop) then spawn, 'gm mogrify ' + border + tifname, stdout, stderr
+         if not keyword_set(nocrop) then spawn, 'gm mogrify -trim ' + tifname, stdout, stderr
+         if not keyword_set(nocrop) then spawn, 'gm mogrify ' + border + tifname, stdout, stderr
          if keyword_set(rotate) then spawn, 'gm mogrify -rotate '+STRTRIM(rotate,2)+ ' ' + tifname, stdout, stderr
          if keyword_set(show) then spawn, 'open '+tifname+'&', stdout, stderr
       endif
@@ -183,7 +183,7 @@ pro kdm_ps_test
   kdm_ps, /landscape, filename='kdm_ps_test.eps'
   plot, [0,0], [1,1], position=[0.3,.5,.8,.9], title='Foo'
   xyouts, 0.5, 0.5, 'Hello World', align=0.5, charsize=3, charth=3
-  kdm_ps, /close, /show, /crop, /PNG, /PDF, /TIF, ROTATE=90, filename='kdm_ps_test.ps'
+  kdm_ps, /close, /show, /crop, /PNG, /PDF, /TIF, ROTATE=-90
   ;;kdm_ps, /close, /show, /TIF, ROTATE=-90, filename='kdm_ps_test.ps', /LOW, /CROP
   ;kdm_ps, /close, /show, /crop, /PNG, ROTATE=-90
 end
