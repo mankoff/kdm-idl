@@ -48,3 +48,19 @@ pro kdm_kml_linearring__define, class
             coordinates: '' }
 end
 
+
+
+;; testing code
+kml = obj_new('kdm_kml', file='kdm_kml_linearring.kml')
+d = obj_new( 'kdm_kml_document', visibility=1, id='docID' )
+kml->add, d
+pl = obj_new( 'kdm_kml_placemark', name='PlaceMark', id='placeID', $
+              description=kdm_cdata('Balloon contents...') )
+d->add, pl
+p = obj_new( 'kdm_kml_polygon', extrude=1, tessellate=1, $
+             x_altitudeMode='clampToGround', id='polyID' )
+pl->add, p
+p->add, obj_new( 'kdm_kml_linearring', lat=[0,1,1,0,0]-0.5, $
+                 lon=[0,0,1,1,0]-0.5, id='ringID' )
+kml->saveKML, /openGE
+end
