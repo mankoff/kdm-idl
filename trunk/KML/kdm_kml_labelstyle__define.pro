@@ -9,7 +9,7 @@ pro kdm_kml_labelstyle::KMLhead
   self->buildsource, '<LabelStyle>'
 end
 pro kdm_kml_labelstyle::KMLbody
-  if self.scale eq 0 then MESSAGE, "Setting label scale to 0", /CONTINUE
+  ;;if self.scale eq 0 then MESSAGE, "Setting label scale to 0", /CONTINUE
   self->buildsource, self->xmlTag( 'scale', self.scale )
 end
 pro kdm_kml_labelstyle::KMLtail
