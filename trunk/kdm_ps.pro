@@ -97,9 +97,9 @@ if not keyword_set(close) then begin
       device, /color, bits=8, $
               filename=filename, $
               encapsulated=encaps, $
-              /portrait, $
               ;; these are default, from clean "help, /device"
               ;; xoff=0.75, yoff=5, xsize=7, ysize=5
+              xoff=1, yoff=2, xsize=7, ysize=5, /inches, $
               _EXTRA=e
    endelse
 endif
@@ -145,7 +145,8 @@ if keyword_set(close) then begin
 ;;             pdfname = pdfnamelo
 ;;             spawn, cmd, stdout, stderr
 ;;          endif
-         if keyword_set(show) then spawn, 'open '+pdfname+'&', stdout, stderr
+         if keyword_set(show) then spawn, 'open -a Preview '+pdfname+'&', $
+                                          stdout, stderr
       endif ;; PDF 
       
       ;; Doesn't work for multi-page PDFs
