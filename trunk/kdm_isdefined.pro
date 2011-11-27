@@ -117,4 +117,4 @@ end
 ;; undefine, x
 ;; kdm_isdefined, x, prompt='Enter something: ', default=BYTE(42)
 ;; help, x
-end
+;end
