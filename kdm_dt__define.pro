@@ -151,6 +151,13 @@ function kdm_dt::TimeStamp
   return, ts
 end
 
+
+function kdm_dt::js
+  sod = self.hour*3600+self.minute*60+self.second
+  js = ymds2js( self.year, self.month, self.day, sod )
+  return, js
+end
+
 ;; some error checking
 pro kdm_dt::errcheck
 ;;   if ( self.day ne 0 AND self.doy ne 0 ) then $
