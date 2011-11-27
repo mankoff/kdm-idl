@@ -46,3 +46,19 @@ pro kdm_kml_linestring__define, class
             coordinates: '' }
 end
 
+
+
+;; testing code
+kml = obj_new('kdm_kml', file='kdm_kml_linestring.kml')
+d = obj_new( 'kdm_kml_document', visibility=1 )
+f = obj_new( 'kdm_kml_folder', id='folder1', name='aFolder', visib=1 )
+ls1 = obj_new('kdm_kml_placemark', lat=indgen(10)*(-2), lon=indgen(10)*2, $
+              alt=indgen(10)*1e5, $
+              x_altitudeMode='relativeToGround', visibility=1, tesselate=0 )
+ls1->add, obj_new( 'kdm_kml_timespan', timebegin=1950 )
+f->add, ls1
+d->add, f
+kml->add, d
+kml->saveKML, /openGE
+end
+
