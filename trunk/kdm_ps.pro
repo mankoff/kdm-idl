@@ -66,6 +66,7 @@ pro kdm_ps, filename=filename, $
             tiff=tiff, $
             show=show, $
             low=low, $
+            high=high, $
             rotate=rotate, $
             _EXTRA=e
 
@@ -154,6 +155,9 @@ if keyword_set(close) then begin
          if keyword_set(low) then begin
             dense=' -density 72x72 ' 
             border=' -border 7x7 -bordercolor white '
+         endif else if keyword_set(high) then begin
+            dense=' -density 600x600 '
+            border=' -border 14x14 -bordercolor white '
          endif else begin
             dense=' -density 300x300 '
             border=' -border 30x30 -bordercolor white '
