@@ -113,8 +113,8 @@ pro kdm_kml::saveKML, recursive=recursive, $
      if lun ne -1 then free_lun, lun
 
      ;; format with xmllint
-     spawn, 'xmllint', out
-     if n_elements(out) ne 0 then begin ;; xmllint command works?
+     spawn, 'xmllint', out, error
+     if error ne '' then begin ;; xmllint command works?
         spawn, 'xmllint --format ' + self.filename + '>' + self.filename+'.xml'
         spawn, 'mv ' + self.filename+'.xml ' + self.filename
      endif
