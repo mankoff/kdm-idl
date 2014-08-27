@@ -114,7 +114,7 @@ pro kdm_kml::saveKML, recursive=recursive, $
 
      ;; format with xmllint
      spawn, 'xmllint', out, error
-     if error ne '' then begin ;; xmllint command works?
+     if error[0] eq '' then begin ;; xmllint command works?
         spawn, 'xmllint --format ' + self.filename + '>' + self.filename+'.xml'
         spawn, 'mv ' + self.filename+'.xml ' + self.filename
      endif
