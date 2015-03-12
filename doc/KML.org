@@ -1,4 +1,4 @@
-#+TITLE: summary Description of the KDM_KML suite
+#+TITLE: Description of the KDM_KML suite
 
 * Introduction
 
