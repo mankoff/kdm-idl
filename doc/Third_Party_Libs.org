@@ -1,0 +1,18 @@
+#+TITLE: Third Party Libraries Required for KDM-IDL Library
+
+* Introduction
+
+This code base makes use of various 3rd party IDL libraries. 
+
+Not all of these are used by KDM-IDL, but it would probably be 
+a good idea to have them all installed. They may be used in the future,
+and they will help your code development.
+
+  * Coyote http://www.dfanning.com/
+  * JHU http://fermi.jhuapl.edu/s1r/idl/s1rlib/local_idl.html
+  * Astronomy http://idlastro.gsfc.nasa.gov/
+  * Catalyst http://www.dfanning.com/catalyst/howtoinstall.html
+  * Gumley http://cimss.ssec.wisc.edu/~gumley/
+  * Markwardt http://www.physics.wisc.edu/~craigm/idl/
+  * Michael Galloy http://michaelgalloy.com/
+  * Motley http://www.dfanning.com/hadfield/idl/README.html

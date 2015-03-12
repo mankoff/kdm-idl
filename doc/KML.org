@@ -1,0 +1,110 @@
+#+TITLE: summary Description of the KDM_KML suite
+
+* Introduction
+
+See http://code.google.com/apis/kml/documentation/kmlreference.html and http://code.google.com/apis/kml/documentation/Images/hierarchy_withgx.gif
+
+* Examples
+
+** Placemark Example ==
+
+#+BEGIN_SRC xml
+<Placemark>
+  <name>Google Earth - New Placemark</name>
+  <description>Some Descriptive text.</description>
+  <LookAt>
+    <longitude>-90.86879847669974</longitude>
+    <latitude>48.25330383601299</latitude>
+    <range>440.8</range>
+    <tilt>8.3</tilt>
+    <heading>2.7</heading>
+  </LookAt>
+  <Point>
+    <coordinates>-90.86948943473118,48.25450093195546,0</coordinates>
+  </Point>
+</Placemark>
+#+END_SRC xml
+
+Becomes:
+
+#+BEGIN_SRC IDL
+kml = obj_new('kdm_kml', filename='test.kml' )
+doc = obj_new('kdm_kml_document')
+placemark = obj_new('kdm_kml_placemark, $
+    name='Google Earth - New Placemark', $
+    description='Some Descriptive text.', $
+    lat=-90.86, lon=48.25 )
+doc->add, placemark
+kml->add, doc
+kml->kmlSave, /kmz, /openGE
+#+END_SRC
+
+Reference: http://code.google.com/apis/kml/documentation/kmlreference.html#placemark
+
+== BalloonStyle Example ==
+
+#+BEGIN_SRC xml
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+  <name>BalloonStyle.kml</name>
+  <open>1</open>
+  <Style id="exampleBalloonStyle">
+    <BalloonStyle>
+      <!-- a background color for the balloon -->
+      <bgColor>ffffffbb</bgColor>
+      <!-- styling of the balloon text -->
+      <text><![CDATA[
+      <b><font color="#CC0000" size="+3">$[name]</font></b>
+      <br/><br/>
+      <font face="Courier">$[description]</font>
+      <br/><br/>
+      Extra text that will appear in the description balloon
+      <br/><br/>
+      <!-- insert the to/from hyperlinks -->
+      $[geDirections]
+      ]]></text>
+    </BalloonStyle>
+  </Style>
+  <Placemark>
+    <name>BalloonStyle</name>
+    <description>An example of BalloonStyle</description>
+    <styleUrl>#exampleBalloonStyle</styleUrl>
+    <Point>
+      <coordinates>-122.370533,37.823842,0</coordinates>
+    </Point>
+  </Placemark>
+</Document>
+</kml>
+#+END_SRC
+
+Becomes:
+
+#+BEGIN_SRC IDL
+kml = obj_new('kdm_kml', file='test.kml')
+d = obj_new( 'kdm_kml_document', visibility=1, name="BalloonStyle.kml", open=1 )
+
+st = obj_new('kdm_kml_style', id='exampleBalloonStyle')
+bs = obj_new( 'kdm_kml_balloonstyle', $
+              bgcolor='ffffffbb', $
+              text=kdm_cdata( '<b><font color="#CC0000" size="+3">$[name]</font></b>' + $
+                              '<br/><br/>' + $
+                              '<font face="Courier">$[description]</font>' + $
+                              '<br/><br/>' + $
+                              'Extra text that will appear in the description balloon' + $
+                              '<br/><br/>' + $
+                              '<!-- insert the to/from hyperlinks -->' + $
+                              '<!-- $[geDirections] -->' ) $
+              )
+p = obj_new( 'kdm_kml_placemark', lon=-122.370533, lat=37.823842, alt=0, $
+             name='BalloonStyle', styleURL='#exampleBalloonStyle', $
+             description='An example of a BalloonStyle', open=1, snippet=0 )
+
+kml->add, d
+d->add, st
+st->add, bs
+d->add, p
+#+END_SRC
+
+Reference: http://code.google.com/apis/kml/documentation/kmlreference.html#balloonstyle
+

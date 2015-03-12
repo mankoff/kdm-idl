@@ -1,0 +1,20 @@
+#+TITLE: List of differences between the IDL code and the KML heirarchy
+
+* Introduction
+
+In general the kdm_kml code tries to map KML properties 1-to-1 to IDL keywords. However this is not always possible. For example, 
+
+  + KML properties have names such as "Altitude" and "AltitudeMode",
+    and IDL does not support keywords like this as the name is
+    ambiguous.
+  + A KML Placemark contains a KML Point, but in the IDL
+    implementation the user does not need to manually add a
+    kdm_kml_point to a kdm_kml_placemark. Instead, the user can just
+    pass the latitude, longitude, altitude, and other point properties
+    to the kdm_kml_placemark.
+
+* List of Differences
+
+  + Wherever KML expects altitudeMode replace it with the IDL x_altitudeMode keyword
+  + There is no need to manually add a Point or LineString to a Placemark. The necessary data is passed directly to the Placemark object
+  + Wherever KML uses the coordinate tag, you should use lat, lon, and altitude keywords. The coordinate will be generated from these fro you.
