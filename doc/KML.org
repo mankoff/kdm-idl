@@ -6,7 +6,7 @@ See http://code.google.com/apis/kml/documentation/kmlreference.html and http://c
 
 * Examples
 
-** Placemark Example ==
+** Placemark Example
 
 #+BEGIN_SRC xml
 <Placemark>
@@ -41,7 +41,7 @@ kml->kmlSave, /kmz, /openGE
 
 Reference: http://code.google.com/apis/kml/documentation/kmlreference.html#placemark
 
-== BalloonStyle Example ==
+** BalloonStyle Example
 
 #+BEGIN_SRC xml
 <?xml version="1.0" encoding="UTF-8"?>
