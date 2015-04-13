@@ -177,7 +177,7 @@ FUNCTION kdm::GetProperty, all=all, _Extra=extraKeyword
   keyword = (Tag_Names(extraKeyword))[0]
   
   ;; Obtain a structure definition of the object class.
-  ok =  Execute("struct = {" + Obj_Class(self) + "}")
+  struct = create_struct(name = Obj_Class(self))
   
   ;; There should be only one match to
   ;; the structure fields. If there
@@ -225,7 +225,8 @@ PRO kdm::SetProperty, _Extra=extraProperties
   
   ;; Obtain a structure definition of the object class.
   ; ok =  Execute("struct = {" + Obj_Class(self) + "}")
-  Call_Procedure , Obj_Class(self)+'__define', struct
+  ; Call_Procedure , Obj_Class(self)+'__define', struct
+  struct = create_struct(name = Obj_Class(self))
   
   ;; Loop through the various properties and their values.
   FOR j=0L,N_Tags(extraProperties)-1 DO BEGIN
