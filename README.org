@@ -5,12 +5,10 @@ IDL code by Ken Mankoff.
 
 A general library for programming. Includes a sub-library that implements most of the Google Earth KML API in IDL.
 
-For example uses see: http://kenmankoff.com/tags.html#IDL-ref
+[[https://i.stack.imgur.com/juhJH.png]]
 
-[[http://kenmankoff.com/images/yagel-multiple-balloons-on-mars/mm71-500x375.jpg]]
-
-[[http://kenmankoff.com/images/vertical-data-in-google-earth/vertical.png]]
+[[https://i.stack.imgur.com/c3ULX.png]]
 
 [[http://mage-p.org/img/gmf-400y.png]]
 
-[[http://kenmankoff.com/images/earthquakes/quakes-500x407.png]]
+[[https://i.stack.imgur.com/OeqyP.png]]
